@@ -1,8 +1,12 @@
 import Camera
 import cv2 as cv
+import os
 
 cam = Camera.Camera()
 count = 1
+# Make Directory to Store Images
+if not os.path.isdir('Images'):
+    os.mkdir('Images')
 while True:
     img = cam.grab_frame()
     Camera.show_image(img)
