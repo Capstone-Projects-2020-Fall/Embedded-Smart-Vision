@@ -4,3 +4,6 @@
 
 # Ignore Image Files
 Images/
+
+# Ignore Video File
+video.mp4
