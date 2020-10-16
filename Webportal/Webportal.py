@@ -2,6 +2,8 @@ from multiprocessing.connection import PipeConnection
 
 from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
 
+from Webportal import Web_Main
+
 _Minfo = {
     "version": 1,
     "name": "Web portal",
@@ -28,6 +30,8 @@ def __proc_message__(conn: PipeConnection):
 # This contains the actual operation of the module which will be run every time
 def __operation__():
     ### ADD MODULE OPERATIONS HERE ###
+    if __name__ == '__main__':
+        Web_Main
     pass
 
 
@@ -46,8 +50,8 @@ def __load__(conn: PipeConnection):
     conn.send(setup_message)
     running = True
     # While we are running do operations
+    __operation__()
     while running:
-        __operation__()
         __proc_message__(conn)
 
 

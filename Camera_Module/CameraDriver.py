@@ -1,13 +1,16 @@
+import os
 from multiprocessing.connection import PipeConnection
 
 from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
 
+from Camera_Module import Camera
+
 _Minfo = {
     "version": 1,
-    "name": "Example Module",
+    "name": "Camera Module",
     "entry_point": -1,
     # The code used to issue messages and establish pipes to the module
-    "message_code": "EMM",
+    "message_code": "CM",
 }
 
 
@@ -26,13 +29,11 @@ def __proc_message__(conn: PipeConnection):
 
 
 # This contains the actual operation of the module which will be run every time
-def __operation__():
+def __operation__(cam, count):
     ### ADD MODULE OPERATIONS HERE ###
-    # Let the world know we are loading a new object
-    img = []
-    setup_message = ModuleMessage("WPM",
-                                  "ready",
-                                  img)
+    frame = cam.grab_frame()
+    path = 'Images/image%d.jpg' % count
+    Camera.save_image(frame, path)
     pass
 
 
@@ -49,11 +50,23 @@ def __load__(conn: PipeConnection):
                                   "ready",
                                   _Minfo["name"] + " done loading!")
     conn.send(setup_message)
+
+    # Create a camera object
+    cam = Camera.Camera()
+    count = 0
+
+    # Make Directory to Store Images
+    if not os.path.isdir('Images'):
+        os.mkdir('Images')
+
     running = True
     # While we are running do operations
     while running:
-        __operation__()
+        __operation__(cam, count)
+        count += 1
         __proc_message__(conn)
+
+    cam.__del__()
 
 
 # Set the entry point function
