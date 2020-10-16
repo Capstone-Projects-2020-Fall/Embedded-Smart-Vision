@@ -14,7 +14,7 @@ class Camera:
     def __init__(self):
         self.cam = cv.VideoCapture(0)
         self.frame_size = (800, 550)
-        self.video = cv.VideoWriter('static/video.mp4', 0, 30, self.frame_size)
+        self.video = cv.VideoWriter('Webportal/static/video.mp4', 0, 30, self.frame_size)
 
     def __del__(self):
         self.cam.release()
