@@ -1,5 +1,6 @@
 import cv2 as cv
 import numpy as np
+import os
 
 
 def save_image(img: np.ndarray, path):
@@ -14,7 +15,8 @@ class Camera:
     def __init__(self):
         self.cam = cv.VideoCapture(0)
         self.frame_size = (800, 550)
-        self.video = cv.VideoWriter('Webportal/static/video.mp4', 0, 30, self.frame_size)
+        path = os.path.join(os.getcwd(), '..', 'Webportal/static/video.mp4');
+        self.video = cv.VideoWriter(path, 0, 30, self.frame_size)
 
     def __del__(self):
         self.cam.release()
