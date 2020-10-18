@@ -9,6 +9,15 @@ def save_image(img: np.ndarray, path):
 def show_image(img: np.ndarray):
     cv.imshow('frame', img)
 
+def face_detection(cascade, image):
+    image_copy = image.copy()
+    grayscale = cv.cvtColor(image_copy, cv.COLOR_BGR2GRAY)
+    faces = cascade.detectMultiScale(grayscale, scaleFactor = 1.1, minNeighbors = 5)
+
+    for (x, y, w, h) in faces:
+        cv.rectangle(image_copy, (x,y), (x+w, y+h), (0, 255, 0), 15)
+    crop_image = image_copy[y: y+h, x: x+w]
+    return crop_image
 
 class Camera:
     def __init__(self):
@@ -29,3 +38,6 @@ class Camera:
         norm = cv.normalize(frame, norm, 0, 255, cv.NORM_MINMAX)
         self.video.write(norm)
         return norm
+
+
+
