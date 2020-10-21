@@ -33,6 +33,7 @@ def __operation__(cam, count):
     ### ADD MODULE OPERATIONS HERE ###
     frame = cam.grab_frame()
     path = 'Images/image%d.jpg' % count
+    path = os.path.join(os.getcwd(), '..', path)
     Camera.save_image(frame, path)
     pass
 
@@ -76,3 +77,27 @@ _Minfo["entry_point"] = __load__
 # Returns a dictionary containing information that describes the module
 def __module_info__():
     return _Minfo
+
+
+# Used to test functionality of module
+def __test__():
+    # Create a camera object
+    cam = Camera.Camera()
+    count = 0
+
+    path = 'Images'
+    path = os.path.join(os.getcwd(), '..', path)
+    # Make Directory to Store Images
+    if not os.path.isdir(path):
+        os.mkdir(path)
+
+    running = True
+    # While we are running do operations
+    while running:
+        __operation__(cam, count)
+        count += 1
+
+    cam.__del__()
+
+
+__test__()
