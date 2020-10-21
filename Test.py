@@ -1,4 +1,4 @@
-import Camera
+from Camera_Module import Camera
 import cv2 as cv
 import os
 
