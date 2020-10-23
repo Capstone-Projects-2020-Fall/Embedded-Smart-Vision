@@ -27,7 +27,10 @@ class Camera:
     def __init__(self):
         self.cam = cv.VideoCapture(0)
         self.frame_size = (800, 550)
-        path = os.path.join(os.getcwd(), '..', 'Webportal/static/video.mp4');
+        path = os.path.join(os.getcwd(), 'Webportal/static/')
+        if not os.path.isdir(path):
+            os.mkdir(path)
+        path = path + 'video.mp4'
         self.video = cv.VideoWriter(path, 0, 30, self.frame_size)
 
     def __del__(self):
