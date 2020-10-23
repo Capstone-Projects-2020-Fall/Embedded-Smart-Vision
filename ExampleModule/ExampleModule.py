@@ -1,7 +1,7 @@
 from multiprocessing.connection import PipeConnection
 
 from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
-
+from Config import cfg_update
 _Minfo = {
     "version": 1,
     "name": "Example Module",
@@ -50,6 +50,11 @@ def __load__(conn: PipeConnection):
                                   _Minfo["name"] + " done loading!")
     conn.send(setup_message)
     running = True
+    config_update = ModuleMessage("PRGH",
+                                  "cfg",
+                                  cfg_update(key="node_name",
+                                             data="This is a new name for the node"))
+    conn.send(config_update)
     # While we are running do operations
     while running:
         __operation__()
