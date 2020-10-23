@@ -51,7 +51,7 @@ def __load__(conn: PipeConnection):
     conn.send(setup_message)
     running = True
     config_update = ModuleMessage("PRGH",
-                                  "cfg",
+                                  config_tags.CFG_SET,
                                   cfg_update(key="node_name",
                                              data="This is a new name for the node"))
     conn.send(config_update)

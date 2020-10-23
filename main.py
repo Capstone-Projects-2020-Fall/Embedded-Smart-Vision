@@ -69,7 +69,7 @@ def start():
     while running:
         # Wait for any messages to be sent
         message: ModuleMessage = host_pipe.recv()
-        if message.tag == "cfg":
+        if message.tag == config_tags.CFG_SET:
             # This message is attempting to access the config
             if isinstance(message.message, cfg_update):
                 # Check our payload is the correct class type
@@ -77,6 +77,8 @@ def start():
                 cfg.set_var(prm)
             else:
                 print("Error in program host: attempted to update the config but passed bad data")
+        elif message.tag == config_tags.CFG_GET:
+            pass
 
     for p in process_pool:
         process_pool[p].get("proc").join()

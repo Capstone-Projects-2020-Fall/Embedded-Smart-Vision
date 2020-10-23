@@ -3,6 +3,14 @@
 import json
 
 
+class config_tags:
+    def __init__(self):
+        pass
+
+    CFG_GET = "cfg_get"
+    CFG_SET = "cfg_set"
+
+
 # Wrapper class to contain the information about a config update we want to do
 class cfg_update:
     def __init__(self, key, data):
