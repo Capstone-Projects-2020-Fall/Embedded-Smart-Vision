@@ -30,8 +30,7 @@ def __proc_message__(conn: PipeConnection):
 # This contains the actual operation of the module which will be run every time
 def __operation__():
     ### ADD MODULE OPERATIONS HERE ###
-    if __name__ == '__main__':
-        Web_Main
+    Web_Main.app.run(host='0.0.0.0', port='5000', debug=True)
     pass
 
 
