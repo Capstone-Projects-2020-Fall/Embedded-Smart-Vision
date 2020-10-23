@@ -1,7 +1,7 @@
-from multiprocessing.connection import PipeConnection
+from multiprocessing.connection import PipeConnection, Pipe
 
 from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
-from Config import cfg_update
+from Config import cfg_transaction, config_tags
 _Minfo = {
     "version": 1,
     "name": "Example Module",
@@ -52,8 +52,18 @@ def __load__(conn: PipeConnection):
     running = True
     config_update = ModuleMessage("PRGH",
                                   config_tags.CFG_SET,
-                                  cfg_update(key="node_name",
-                                             data="This is a new name for the node"))
+                                  cfg_transaction(key="node_name",
+                                                  data="This is a new name for the node"))
+    h, c = Pipe()
+    config_get = ModuleMessage("PRGH",
+                               config_tags.CFG_GET,
+                               cfg_transaction(key="remote_host_token",
+                                               data="",
+                                               set=False,
+                                               reply=c)
+                               )
+    conn.send(config_get)
+    print(h.recv())
     conn.send(config_update)
     # While we are running do operations
     while running:

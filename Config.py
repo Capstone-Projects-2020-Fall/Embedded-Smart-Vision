@@ -12,12 +12,14 @@ class config_tags:
 
 
 # Wrapper class to contain the information about a config update we want to do
-class cfg_update:
-    def __init__(self, key, data):
+class cfg_transaction:
+    def __init__(self, key, data, set=True, reply=-1):
         # Which key do we want to access
         self.key = key
         # What do we want to set it to
         self.data = data
+        self.set = set
+        self.reply = reply
 
 
 class Config:
@@ -28,13 +30,21 @@ class Config:
     def print_vars(self):
         print(self.vars)
 
-    def set_var(self, data: cfg_update):
+    # Set a config variable
+    def var_transaction(self, data: cfg_transaction):
         print(data.key)
-        if data.key in self.vars:
-            # if the key in the data is a valid variable
-            self.vars[data.key] = data.data
-            with open(self.config_path, 'w') as outFile:
-                json.dump(self.vars, outFile)
+        if data.set:
+            if data.key in self.vars:
+                # if the key in the data is a valid variable
+                self.vars[data.key] = data.data
+                with open(self.config_path, 'w') as outFile:
+                    json.dump(self.vars, outFile)
+        else:
+            if data.key in self.vars:
+                if data.reply == -1:
+                    print("Error: attempting to get a variable without a reply pipe")
+                else:
+                    data.reply.send(self.vars[data.key])
 
     def load_config(self):
         print("Loading configuration...")

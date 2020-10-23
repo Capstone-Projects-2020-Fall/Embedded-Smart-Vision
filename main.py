@@ -1,7 +1,7 @@
 import ModuleList
 from multiprocessing import Process, Pipe
 
-from Config import cfg_update, Config
+from Config import cfg_transaction, Config, config_tags
 from ModuleCommunicationHandler import ModuleCommunicationHandler
 from ModuleCommunicationHandler import ModuleConnection
 
@@ -71,14 +71,19 @@ def start():
         message: ModuleMessage = host_pipe.recv()
         if message.tag == config_tags.CFG_SET:
             # This message is attempting to access the config
-            if isinstance(message.message, cfg_update):
+            if isinstance(message.message, cfg_transaction):
                 # Check our payload is the correct class type
-                prm: cfg_update = message.message
-                cfg.set_var(prm)
+                prm: cfg_transaction = message.message
+                cfg.var_transaction(prm)
             else:
                 print("Error in program host: attempted to update the config but passed bad data")
         elif message.tag == config_tags.CFG_GET:
-            pass
+            if isinstance(message.message, cfg_transaction):
+                # Check our payload is the correct class type
+                prm: cfg_transaction = message.message
+                cfg.var_transaction(prm)
+            else:
+                print("Error in program host: attempted to update the config but passed bad data")
 
     for p in process_pool:
         process_pool[p].get("proc").join()
