@@ -31,11 +31,20 @@ def __proc_message__(conn: PipeConnection):
 def __operation__():
     ### ADD MODULE OPERATIONS HERE ###
     app = create_app()
-    run_thread = threading.Thread(target=app.run(), daemon=True)
-    run_thread.start()
-    print("Thread was started")
-    DBInterface.add_video('Webportal_Module/application/views/Videos/video.mp4', 'video', app)
+    message_thread = threading.Thread(target=check_messages, args=(app,), daemon=True)
+    message_thread.start()
+    app.run()
     pass
+
+
+def check_messages(app):
+    app.app_context().push()
+    from Webportal_Module.application.models import Tag
+    tags = Tag.query.all()
+    for tag in tags:
+        print(tag.videoID, tag.classification)
+    #while True:
+        #print("checking for messages...")
 
 
 # Runs the modules functionality
@@ -51,11 +60,8 @@ def __load__(conn: PipeConnection):
                                   "ready",
                                   _Minfo["name"] + " done loading!")
     conn.send(setup_message)
-    running = True
     # While we are running do operations
     __operation__()
-    while running:
-        __proc_message__(conn)
 
 
 # Set the entry point function

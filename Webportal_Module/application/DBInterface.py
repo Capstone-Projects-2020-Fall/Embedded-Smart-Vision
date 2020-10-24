@@ -1,13 +1,14 @@
 from . import db
+from .models import Video, Tag
 
 
 def add_video(path, tags, app):
-    video = db.Video(path=path)
-    with app.app_context():
-        db.session.add(video)
+    app.app_context().push()
+    video = Video(path=path)
+    db.session.add(video)
+    db.session.commit()
     for tag in tags:
-        new_tag = db.Tag(videoid=video.id, classification=tag)
-        with app.app_context():
-            db.session.add(new_tag)
-    with app.app_context():
-        db.session.commit()
+        new_tag = Tag(videoID=video.id, classification=tag)
+        db.session.add(new_tag)
+    db.session.commit()
+    print("Added Video to database")
