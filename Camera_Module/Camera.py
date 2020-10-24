@@ -27,15 +27,17 @@ class Camera:
     def __init__(self):
         self.cam = cv.VideoCapture(0)
         self.frame_size = (800, 550)
-        path = os.path.join(os.getcwd(), 'Webportal/static/')
-        if not os.path.isdir(path):
-            os.mkdir(path)
-        path = path + 'video.mp4'
+        path = os.path.join(os.getcwd(), 'video.mp4')
+#        path = os.path.join(path, 'Wedportal_Module/application/views/Videos/')
+#        if not os.path.isdir(path):
+#            os.mkdir(path)
+#        path = path + 'video.mp4'
         self.video = cv.VideoWriter(path, 0, 30, self.frame_size)
+        print('made Video Writer')
 
     def __del__(self):
-        self.cam.release()
         self.video.release()
+        self.cam.release()
         cv.destroyAllWindows()
 
     # Grabs frame from passed VideoCapture object (usb camera)

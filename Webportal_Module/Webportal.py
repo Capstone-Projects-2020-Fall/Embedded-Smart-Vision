@@ -1,16 +1,15 @@
-import os
+import threading
 from multiprocessing.connection import PipeConnection
 
 from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
-
-from Camera_Module import Camera
+from Webportal_Module.application import create_app, DBInterface
 
 _Minfo = {
     "version": 1,
-    "name": "Camera Module",
+    "name": "Web portal",
     "entry_point": -1,
     # The code used to issue messages and establish pipes to the module
-    "message_code": "CM",
+    "message_code": "WPM",
 }
 
 
@@ -29,11 +28,13 @@ def __proc_message__(conn: PipeConnection):
 
 
 # This contains the actual operation of the module which will be run every time
-def __operation__(cam, count):
+def __operation__():
     ### ADD MODULE OPERATIONS HERE ###
-    frame = cam.grab_frame()
-    path = 'Images/image%d.jpg' % count
-    Camera.save_image(frame, path)
+    app = create_app()
+    run_thread = threading.Thread(target=app.run(), daemon=True)
+    run_thread.start()
+    print("Thread was started")
+    DBInterface.add_video('Webportal_Module/application/views/Videos/video.mp4', 'video', app)
     pass
 
 
@@ -50,23 +51,11 @@ def __load__(conn: PipeConnection):
                                   "ready",
                                   _Minfo["name"] + " done loading!")
     conn.send(setup_message)
-
-    # Create a camera object
-    cam = Camera.Camera()
-    count = 0
-
-    # Make Directory to Store Images
-    if not os.path.isdir('Images'):
-        os.mkdir('Images')
-
     running = True
     # While we are running do operations
+    __operation__()
     while running:
-        __operation__(cam, count)
-        count += 1
         __proc_message__(conn)
-
-    cam.__del__()
 
 
 # Set the entry point function
@@ -79,9 +68,5 @@ def __module_info__():
 
 
 if __name__ == '__main__':
-    # Create a camera object
-    cam = Camera.Camera()
-    count = 0
-    while count < 100:
-        __operation__(cam, count)
-        count += 1
+    __operation__()
+    print('Started the server')
