@@ -2,8 +2,7 @@ from . import db
 from .models import Video, Tag
 
 
-def add_video(path, tags, app):
-    app.app_context().push()
+def add_video(path, tags):
     video = Video(path=path)
     db.session.add(video)
     db.session.commit()

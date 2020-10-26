@@ -82,6 +82,6 @@ if __name__ == '__main__':
     # Create a camera object
     cam = Camera.Camera()
     count = 0
-    while count < 100:
+    while count < 1000:
         __operation__(cam, count)
         count += 1

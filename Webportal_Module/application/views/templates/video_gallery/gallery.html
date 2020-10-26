@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Video Gallery</title>
+    <link rel="stylesheet" href="{{ url_for('video_gallery.static', filename='gallery.css') }}">
+</head>
+<body>
+    <div class="gallery">
+        {% for video in taggedVideos %}
+            <div class="thumbnail">
+            <figure>
+                <a href="{{ url_for('video_gallery.watch_video', videoname=video.path) }}">
+                <img src={{ video.image }}>
+                    </a>
+                <figcaption>{{ video.tags }}</figcaption>
+            </figure>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

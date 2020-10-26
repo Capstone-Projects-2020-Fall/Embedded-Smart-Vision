@@ -1,4 +1,5 @@
 import threading
+import os
 from multiprocessing.connection import PipeConnection
 
 from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
@@ -39,10 +40,23 @@ def __operation__():
 
 def check_messages(app):
     app.app_context().push()
-    from Webportal_Module.application.models import Tag
+    """
+    parent_path = os.path.join(os.pardir, 'Videos')
+    videos = os.listdir(parent_path)
+    count = 1
+    for video in videos:
+        tag = 'Tag%d' % count
+        DBInterface.add_video(video, (tag,))
+        count += 1
+
+    from Webportal_Module.application.models import Tag, Video
     tags = Tag.query.all()
     for tag in tags:
         print(tag.videoID, tag.classification)
+    videos = Video.query.all()
+    for video in videos:
+        print(video.path)
+    """
     #while True:
         #print("checking for messages...")
 
@@ -75,4 +89,3 @@ def __module_info__():
 
 if __name__ == '__main__':
     __operation__()
-    print('Started the server')

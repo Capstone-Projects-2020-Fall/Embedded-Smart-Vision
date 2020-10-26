@@ -27,13 +27,12 @@ class Camera:
     def __init__(self):
         self.cam = cv.VideoCapture(0)
         self.frame_size = (800, 550)
-        path = os.path.join(os.getcwd(), 'video.mp4')
-#        path = os.path.join(path, 'Wedportal_Module/application/views/Videos/')
-#        if not os.path.isdir(path):
-#            os.mkdir(path)
-#        path = path + 'video.mp4'
+        self.path = os.path.join(os.pardir, 'Videos/')
+        if not os.path.isdir(self.path):
+            os.mkdir(self.path)
+        self.count = 0
+        path = self.path + 'video%d.mp4' % (self.count % 100 + 1)
         self.video = cv.VideoWriter(path, 0, 30, self.frame_size)
-        print('made Video Writer')
 
     def __del__(self):
         self.video.release()
@@ -46,5 +45,13 @@ class Camera:
         frame = cv.resize(frame, self.frame_size, interpolation=cv.INTER_NEAREST)
         norm = np.zeros(self.frame_size)
         norm = cv.normalize(frame, norm, 0, 255, cv.NORM_MINMAX)
+
+        if (self.count % 100) == 0:
+            self.video.release()
+            path = self.path + 'video%d.mp4' % (self.count / 100 + 1)
+            print('Making video with this path: ' + path)
+            self.video = cv.VideoWriter(path, 0, 30, self.frame_size)
+
         self.video.write(norm)
+        self.count += 1
         return norm
