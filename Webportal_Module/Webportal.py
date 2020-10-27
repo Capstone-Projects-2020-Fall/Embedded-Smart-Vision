@@ -1,9 +1,7 @@
 import threading
-import os
 from multiprocessing.connection import PipeConnection
-
 from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
-from Webportal_Module.application import create_app, DBInterface
+from Webportal_Module.application import create_app, DBInterface, video_stream
 
 _Minfo = {
     "version": 1,
@@ -23,22 +21,24 @@ def __proc_message__(conn: PipeConnection):
         if isinstance(m, ModuleMessage):
             # Check if a message code exists for the given module
             ### HANDLE MESSAGES HERE ###
-            print("User IO: ", m.message)
+            if m.tag == 'New Frame':
+                video_stream.update_frame(m.message)
+            #print("User IO: ", m.message)
         else:
             print("Error! received unknown object as a message!")
 
 
 # This contains the actual operation of the module which will be run every time
-def __operation__():
+def __operation__(conn: PipeConnection):
     ### ADD MODULE OPERATIONS HERE ###
     app = create_app()
-    message_thread = threading.Thread(target=check_messages, args=(app,), daemon=True)
+    message_thread = threading.Thread(target=check_messages, args=(app, conn,), daemon=True)
     message_thread.start()
     app.run()
     pass
 
 
-def check_messages(app):
+def check_messages(app, conn: PipeConnection):
     app.app_context().push()
     """
     parent_path = os.path.join(os.pardir, 'Videos')
@@ -57,8 +57,8 @@ def check_messages(app):
     for video in videos:
         print(video.path)
     """
-    #while True:
-        #print("checking for messages...")
+    while True:
+        __proc_message__(conn)
 
 
 # Runs the modules functionality
@@ -75,7 +75,7 @@ def __load__(conn: PipeConnection):
                                   _Minfo["name"] + " done loading!")
     conn.send(setup_message)
     # While we are running do operations
-    __operation__()
+    __operation__(conn)
 
 
 # Set the entry point function
@@ -88,4 +88,5 @@ def __module_info__():
 
 
 if __name__ == '__main__':
-    __operation__()
+    app = create_app()
+    app.run()

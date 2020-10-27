@@ -4,6 +4,7 @@ from multiprocessing.connection import PipeConnection
 from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
 
 from Camera_Module import Camera
+import cv2 as cv
 
 _Minfo = {
     "version": 1,
@@ -32,9 +33,9 @@ def __proc_message__(conn: PipeConnection):
 def __operation__(cam, count):
     ### ADD MODULE OPERATIONS HERE ###
     frame = cam.grab_frame()
-    path = 'Images/image%d.jpg' % count
-    Camera.save_image(frame, path)
-    pass
+    #path = 'Images/image%d.jpg' % count
+    #Camera.save_image(frame, path)
+    return frame
 
 
 # Runs the modules functionality
@@ -62,7 +63,10 @@ def __load__(conn: PipeConnection):
     running = True
     # While we are running do operations
     while running:
-        __operation__(cam, count)
+        frame = __operation__(cam, count)
+        success, frame = cv.imencode('.jpg', frame)
+        frame_message = ModuleMessage("WPM", "New Frame", frame.tobytes())
+        conn.send(frame_message)
         count += 1
         __proc_message__(conn)
 
@@ -76,12 +80,3 @@ _Minfo["entry_point"] = __load__
 # Returns a dictionary containing information that describes the module
 def __module_info__():
     return _Minfo
-
-
-if __name__ == '__main__':
-    # Create a camera object
-    cam = Camera.Camera()
-    count = 0
-    while count < 1000:
-        __operation__(cam, count)
-        count += 1

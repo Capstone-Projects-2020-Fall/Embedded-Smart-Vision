@@ -22,12 +22,13 @@ def show_videos():
         tags = Tag.query.filter_by(videoID=video.id).all()
         video_with_tag = VideoWithTag(video_path, tags)
         tagged_videos.append(video_with_tag)
+        print('Found video with this Path: ', video_path)
     return render_template('gallery.html', taggedVideos=tagged_videos)
 
 
 @video_gallery.route('/grabVideo/<videoname>')
 def grab_video(videoname):
-    # print('Attempting to grab this video: ' + video_directory + videoname)
+    print('Attempting to grab this video: ' + video_directory + videoname)
     return send_file(video_directory + videoname)
 
 @video_gallery.route('/watchVideo/<videoname>')
@@ -47,9 +48,13 @@ class VideoWithTag:
         self.tags = self.tags[0:len(self.tags) - 2]
 
         size = 100, 100
+        print('Getting Video Capture')
         video = cv.VideoCapture(video_directory + path)
+        if not video.isOpened():
+            print('Error opening video: ', video_directory + path)
         video_length = int(video.get(cv.CAP_PROP_FRAME_COUNT)) - 1
         if video.isOpened() and video_length > 0:
+            print('Opened Video Capture')
             success, thumbnail = video.read()
             thumbnail = cv.cvtColor(thumbnail, cv.COLOR_BGR2RGB)
             thumbnail = Image.fromarray(thumbnail)

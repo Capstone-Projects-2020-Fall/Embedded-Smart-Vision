@@ -1,12 +1,16 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 import os
+from Webportal_Module.application.VideoStream.VideoFeed import VideoStream
 
 db = SQLAlchemy()
-video_directory = os.path.abspath(os.path.join(os.pardir, 'Videos'))
+video_directory = os.path.abspath(os.path.join(os.getcwd(), 'Videos'))
 video_directory = video_directory + '/'
-root_directory = os.path.abspath(os.path.join(os.getcwd(), 'application'))
 print(video_directory)
+root_directory = os.path.abspath(os.path.join(os.getcwd(), 'Webportal_Module', 'application'))
+root_directory = root_directory + '/'
+print(root_directory)
+video_stream = VideoStream()
 
 
 def create_app():
