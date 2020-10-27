@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+  <title>{% block title %}{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='navigation.css') }}">
+  {% block style %}{% endblock %}
+<section class="content">
+  <section id="navigation" class="navigation">
+      <ul class="links">
+        <div class="link"><a href="{{ url_for('home_page.show_home_page') }}" class="text">Home</a></div>
+        <div class="link"><a href="{{ url_for('dashboard.show_live_video') }}" class="text">Dashboard</a></div>
+        <div class="link"><a href="{{ url_for('video_gallery.show_all_videos') }}" class="text">Videos</a></div>
+      </ul>
+  </section><section class="page">
+    <header class="PageHeader">
+      {% block header %}{% endblock %}
+    </header>
+      {% block content %}{% endblock %}
+  </section>
+</section>
+</html>
