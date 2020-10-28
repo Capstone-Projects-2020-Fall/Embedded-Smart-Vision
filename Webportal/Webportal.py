@@ -1,6 +1,6 @@
 from multiprocessing.connection import PipeConnection
 
-from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
+from ModuleMessage import ModuleMessage
 
 from Webportal import Web_Main
 

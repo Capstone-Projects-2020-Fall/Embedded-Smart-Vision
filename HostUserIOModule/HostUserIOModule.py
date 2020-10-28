@@ -1,6 +1,6 @@
 from multiprocessing.connection import PipeConnection
 
-from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
+from ModuleMessage import ModuleMessage
 
 _Minfo = {
     "version": 1,

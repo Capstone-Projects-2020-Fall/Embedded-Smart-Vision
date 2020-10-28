@@ -2,13 +2,15 @@ import ModuleList
 from multiprocessing import Process, Pipe
 
 from Config import cfg_transaction, Config, config_tags
-from ModuleCommunicationHandler import ModuleCommunicationHandler
-from ModuleCommunicationHandler import ModuleConnection
-
+import ModuleConnection
 
 # Actually starts up the process handling a given module and returns back the name followed by the process
-from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
+from ModuleMessage import ModuleMessage
 
+if __name__ == '__main__':
+    # Our global variables, these are used to access state based information
+    cfg: Config = Config()
+    cfg.load_config()
 
 def run_module(module_info):
     # print("Running module: ", module_info.get("name"))
@@ -35,11 +37,44 @@ def break_down():
     print("Exiting program host!")
 
 
+# Handles the inner-process communication calls
+def message_handler(conns):
+
+    for c in conns:
+        # Check that we have data before attempting to recv data
+        if conns[c].pipe.poll():
+            # Receive the message to a temp variable
+            m = conns[c].pipe.recv()
+            # Verify that the sender used the proper data type to send the message
+            if isinstance(m, ModuleMessage):
+                if m.target == "PRGH":
+                    # This message is to be sent to the program host
+                    if m.tag == config_tags.CFG_SET:
+                        # This message is attempting to access the config
+                        if isinstance(m.message, cfg_transaction):
+                            # Check our payload is the correct class type
+                            prm: cfg_transaction = m.message
+                            cfg.var_transaction(prm)
+                        else:
+                            print("Error in program host: attempted to update the config but passed bad data")
+                    elif m.tag == config_tags.CFG_GET:
+                        if isinstance(m.message, cfg_transaction):
+                            # Check our payload is the correct class type
+                            prm: cfg_transaction = m.message
+                            cfg.var_transaction(prm)
+                        else:
+                            print("Error in program host: attempted to update the config but passed bad data")
+                # Check if a message code exists for the given module
+                if m.target in conns:
+                    conns[m.target].pipe.send(m)
+                    print(conns[m.target])
+            else:
+                print("Error! received unknown object as a message!")
+
+
 # This function is the starting point for the program host
 def start():
-    # Our global variables, these are used to access state based information
-    cfg: Config = Config()
-    cfg.load_config()
+
 
     # the list of modules we want to install
     module_list = ModuleList.module_list
@@ -56,39 +91,13 @@ def start():
     # Create a pipe for the program host to send and receive data on
     host_pipe, send_end = Pipe(duplex=True)
 
-    # Setup the module communication handler
-    # (We do this without actually installing the module because we want to make sure
-    # it has the list of other modules since it is special)
-    communication_handler = Process(target=ModuleCommunicationHandler.__load__,
-                                    daemon=True,
-                                    name="Module Communication Handler",
-                                    args=(module_connections,send_end))
-    communication_handler.start()
-
     running = True
     while running:
-        # Wait for any messages to be sent
-        message: ModuleMessage = host_pipe.recv()
-        if message.tag == config_tags.CFG_SET:
-            # This message is attempting to access the config
-            if isinstance(message.message, cfg_transaction):
-                # Check our payload is the correct class type
-                prm: cfg_transaction = message.message
-                cfg.var_transaction(prm)
-            else:
-                print("Error in program host: attempted to update the config but passed bad data")
-        elif message.tag == config_tags.CFG_GET:
-            if isinstance(message.message, cfg_transaction):
-                # Check our payload is the correct class type
-                prm: cfg_transaction = message.message
-                cfg.var_transaction(prm)
-            else:
-                print("Error in program host: attempted to update the config but passed bad data")
+        message_handler(module_connections)
 
     for p in process_pool:
         process_pool[p].get("proc").join()
 
-    communication_handler.join()
     # print(module_connections)
     break_down()
 

@@ -1,6 +1,6 @@
 from multiprocessing.connection import PipeConnection, Pipe
 
-from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
+from ModuleMessage import ModuleMessage
 from Config import cfg_transaction, config_tags
 _Minfo = {
     "version": 1,
