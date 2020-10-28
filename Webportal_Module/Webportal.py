@@ -1,17 +1,14 @@
-import os
+import threading
 from multiprocessing.connection import PipeConnection
-
 from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
-
-from Camera_Module import Camera
-import cv2 as cv
+from Webportal_Module.application import create_app, DBInterface, video_stream
 
 _Minfo = {
     "version": 1,
-    "name": "Camera Module",
+    "name": "Web portal",
     "entry_point": -1,
     # The code used to issue messages and establish pipes to the module
-    "message_code": "CM",
+    "message_code": "WPM",
 }
 
 
@@ -24,18 +21,44 @@ def __proc_message__(conn: PipeConnection):
         if isinstance(m, ModuleMessage):
             # Check if a message code exists for the given module
             ### HANDLE MESSAGES HERE ###
-            print("User IO: ", m.message)
+            if m.tag == 'New Frame':
+                video_stream.update_frame(m.message)
+            #print("User IO: ", m.message)
         else:
             print("Error! received unknown object as a message!")
 
 
 # This contains the actual operation of the module which will be run every time
-def __operation__(cam, count):
+def __operation__(conn: PipeConnection):
     ### ADD MODULE OPERATIONS HERE ###
-    frame = cam.grab_frame()
-    #path = 'Images/image%d.jpg' % count
-    #Camera.save_image(frame, path)
-    return frame
+    app = create_app()
+    message_thread = threading.Thread(target=check_messages, args=(app, conn,), daemon=True)
+    message_thread.start()
+    app.run()
+    pass
+
+
+def check_messages(app, conn: PipeConnection):
+    app.app_context().push()
+    """
+    parent_path = os.path.join(os.pardir, 'Videos')
+    videos = os.listdir(parent_path)
+    count = 1
+    for video in videos:
+        tag = 'Tag%d' % count
+        DBInterface.add_video(video, (tag,))
+        count += 1
+
+    from Webportal_Module.application.models import Tag, Video
+    tags = Tag.query.all()
+    for tag in tags:
+        print(tag.videoID, tag.classification)
+    videos = Video.query.all()
+    for video in videos:
+        print(video.path)
+    """
+    while True:
+        __proc_message__(conn)
 
 
 # Runs the modules functionality
@@ -51,26 +74,8 @@ def __load__(conn: PipeConnection):
                                   "ready",
                                   _Minfo["name"] + " done loading!")
     conn.send(setup_message)
-
-    # Create a camera object
-    cam = Camera.Camera()
-    count = 0
-
-    # Make Directory to Store Images
-    if not os.path.isdir('Images'):
-        os.mkdir('Images')
-
-    running = True
     # While we are running do operations
-    while running:
-        frame = __operation__(cam, count)
-        success, frame = cv.imencode('.jpg', frame)
-        frame_message = ModuleMessage("WPM", "New Frame", frame.tobytes())
-        conn.send(frame_message)
-        count += 1
-        __proc_message__(conn)
-
-    cam.__del__()
+    __operation__(conn)
 
 
 # Set the entry point function
@@ -80,3 +85,8 @@ _Minfo["entry_point"] = __load__
 # Returns a dictionary containing information that describes the module
 def __module_info__():
     return _Minfo
+
+
+if __name__ == '__main__':
+    app = create_app()
+    app.run()

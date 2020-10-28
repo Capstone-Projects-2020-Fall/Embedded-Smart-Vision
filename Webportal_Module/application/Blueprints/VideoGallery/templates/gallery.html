@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block style %}
+    <link rel="stylesheet" href="{{ url_for('video_gallery.static', filename='gallery.css') }}">
+{% endblock %}
+
+{% block header %}
+  <h1>{% block title %}Video Gallery{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form action="/videoGallery/sort" method="POST">
+        <input type="text" name="tags" class="search" placeholder="Enter tags">
+        <input type="submit" name="submit" class="submit" value="Search">
+    </form>
+    <div class="gallery">
+        {% for video in taggedVideos %}
+            <div class="thumbnail">
+            <figure>
+                <a href="{{ url_for('video_gallery.watch_video', videoname=video.path) }}">
+                <img src={{ video.image }}>
+                    </a>
+                <figcaption>{{ video.tags }}</figcaption>
+            </figure>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

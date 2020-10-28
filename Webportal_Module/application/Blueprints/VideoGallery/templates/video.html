@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block title %}Video{% endblock %}
+
+{% block header %}
+  <h1>{{ tags }}</h1>
+{% endblock %}
+
+{% block content %}
+  <video id="video" width = "800" height="550" controls>
+    <source src={{ video }} type="video/mp4">
+      Your Browser Does Not Support The Video Tag
+    </video>
+{% endblock %}
