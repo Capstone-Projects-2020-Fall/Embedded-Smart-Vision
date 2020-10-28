@@ -67,7 +67,7 @@ def message_handler(conns):
                 # Check if a message code exists for the given module
                 if m.target in conns:
                     conns[m.target].pipe.send(m)
-                    print(conns[m.target])
+                    #print(conns[m.target])
             else:
                 print("Error! received unknown object as a message!")
 

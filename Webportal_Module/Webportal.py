@@ -1,6 +1,6 @@
 import threading
 from multiprocessing.connection import PipeConnection
-from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
+from ModuleMessage import ModuleMessage
 from Webportal_Module.application import create_app, DBInterface, video_stream
 
 _Minfo = {

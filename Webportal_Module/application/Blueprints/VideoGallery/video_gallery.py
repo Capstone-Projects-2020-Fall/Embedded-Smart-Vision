@@ -1,4 +1,5 @@
 # import the necessary packages
+import os
 from base64 import b64encode
 
 from flask import Blueprint, render_template, send_file, request
@@ -63,10 +64,11 @@ class VideoWithTag:
         self.tags = self.tags[0:len(self.tags) - 2]
 
         size = 100, 100
-        print('Getting Video Capture')
         video = cv.VideoCapture(video_directory + path)
         if not video.isOpened():
             print('Error opening video: ', video_directory + path)
+        if not os.path.isfile(video_directory + path):
+            print('Path is not a file')
         video_length = int(video.get(cv.CAP_PROP_FRAME_COUNT)) - 1
         if video.isOpened() and video_length > 0:
             print('Opened Video Capture')

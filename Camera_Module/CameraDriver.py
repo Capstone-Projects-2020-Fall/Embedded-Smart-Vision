@@ -1,7 +1,7 @@
 import os
 from multiprocessing.connection import PipeConnection
 
-from ModuleCommunicationHandler.ModuleMessage import ModuleMessage
+from ModuleMessage import ModuleMessage
 
 from Camera_Module import Camera
 import cv2 as cv
@@ -68,6 +68,8 @@ def __load__(conn: PipeConnection):
         frame_message = ModuleMessage("WPM", "New Frame", frame.tobytes())
         conn.send(frame_message)
         count += 1
+        if count > 1000:
+            running = False
         __proc_message__(conn)
 
     cam.__del__()
