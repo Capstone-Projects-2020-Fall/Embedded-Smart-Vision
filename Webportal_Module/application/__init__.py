@@ -19,9 +19,9 @@ def create_app():
 
     db.init_app(app)
 
-    from .Blueprints.home_page import home_page
-    from .Blueprints.dashboard import dashboard
-    from .Blueprints.video_gallery import video_gallery
+    from Webportal_Module.application.Blueprints.HomePage.home_page import home_page
+    from Webportal_Module.application.Blueprints.Dashboard.dashboard import dashboard
+    from Webportal_Module.application.Blueprints.VideoGallery.video_gallery import video_gallery
     app.register_blueprint(home_page)
     app.register_blueprint(dashboard)
     app.register_blueprint(video_gallery)

@@ -6,5 +6,5 @@ from Camera_Module import CameraDriver
 module_list = [
     HostUserIOModule.__module_info__(),
     Webportal.__module_info__(),
-    #CameraDriver.__module_info__()
+    CameraDriver.__module_info__()
 ]

@@ -1,10 +1,10 @@
 # home_page.py
 # import the necessary packages
 from flask import Blueprint, render_template, Response
-from .. import video_stream
+from ... import video_stream
 
 
-dashboard = Blueprint('dashboard', __name__, template_folder='templates/dashboard')
+dashboard = Blueprint('dashboard', __name__, template_folder='templates')
 
 
 @dashboard.route('/dashboard')

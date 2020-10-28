@@ -2,14 +2,14 @@
 from base64 import b64encode
 
 from flask import Blueprint, render_template, send_file, request
-from ..models import Video, Tag
-from .. import video_directory
+from ...models import Video, Tag
+from ... import video_directory
 import cv2 as cv
 from PIL import Image
 import io
 
 video_gallery = Blueprint('video_gallery', __name__,
-                          template_folder='templates/video_gallery',
+                          template_folder='templates',
                           static_folder='gallery_static')
 
 
