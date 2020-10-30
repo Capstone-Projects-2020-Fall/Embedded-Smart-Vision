@@ -1,0 +1,14 @@
+
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/ProgramHost.iml
+.idea/workspace.xml
+__pycache__/Config.cpython-38.pyc
+__pycache__/ModuleList.cpython-38.pyc
+AnotherModule/__pycache__/AnotherModule.cpython-38.pyc
+*.pyc
+*.mp4
+.idea/Embedded-Smart-Vision.iml
+windowsenv/
