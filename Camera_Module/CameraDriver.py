@@ -1,6 +1,6 @@
 import os
 from _thread import start_new_thread
-from multiprocessing.connection import PipeConnection
+from multiprocessing import connection
 from datetime import datetime, timedelta
 
 from ModuleMessage import ModuleMessage
@@ -24,7 +24,7 @@ _Minfo = {
 
 
 # Processes any messages left on the queue
-def __proc_message__(conn: PipeConnection):
+def __proc_message__(conn):
     # if we receive a message on the connection act on it
     if conn.poll():
         m = conn.recv()
@@ -38,7 +38,7 @@ def __proc_message__(conn: PipeConnection):
 
 
 # This contains the actual operation of the module which will be run every time
-def __operation__(cam: Camera.Camera, conn: PipeConnection):
+def __operation__(cam: Camera.Camera, conn):
     ### ADD MODULE OPERATIONS HERE ###
     # Grab Frame and check if face was found
     global recording, frames, last_found
@@ -70,7 +70,7 @@ def __operation__(cam: Camera.Camera, conn: PipeConnection):
                 recording = False
 
 
-def make_video(frames: list, conn: PipeConnection):
+def make_video(frames: list, conn):
     print('Making Video')
     global video_count
     video_count += 1
@@ -84,7 +84,7 @@ def make_video(frames: list, conn: PipeConnection):
 
 
 # Runs the modules functionality
-def __load__(conn: PipeConnection):
+def __load__(conn):
     # Let the world know we are loading a new object
     setup_message = ModuleMessage("HIO",
                                   "loading",

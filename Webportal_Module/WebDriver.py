@@ -1,5 +1,5 @@
 import threading
-from multiprocessing.connection import PipeConnection
+from multiprocessing import Pipe
 from ModuleMessage import ModuleMessage
 from Webportal_Module.application import create_app, DBInterface, video_stream
 
@@ -16,7 +16,7 @@ tags = None
 
 
 # Processes any messages left on the queue
-def __proc_message__(conn: PipeConnection):
+def __proc_message__(conn):
     global path, tags
     # if we receive a message on the connection act on it
     if conn.poll():
@@ -42,7 +42,7 @@ def __proc_message__(conn: PipeConnection):
 
 
 # This contains the actual operation of the module which will be run every time
-def __operation__(conn: PipeConnection):
+def __operation__(conn):
     ### ADD MODULE OPERATIONS HERE ###
     app = create_app()
     message_thread = threading.Thread(target=check_messages, args=(app, conn,), daemon=True)
@@ -51,7 +51,7 @@ def __operation__(conn: PipeConnection):
     pass
 
 
-def check_messages(app, conn: PipeConnection):
+def check_messages(app, conn):
     app.app_context().push()
     """
     parent_path = os.path.join(os.pardir, 'Videos')
@@ -74,7 +74,7 @@ def check_messages(app, conn: PipeConnection):
 
 
 # Runs the modules functionality
-def __load__(conn: PipeConnection):
+def __load__(conn):
     # Let the world know we are loading a new object
     setup_message = ModuleMessage("HIO",
                                   "loading",
