@@ -12,6 +12,7 @@ if __name__ == '__main__':
     cfg: Config = Config()
     cfg.load_config()
 
+
 def run_module(module_info):
     # print("Running module: ", module_info.get("name"))
     # Holds information about the name of the module

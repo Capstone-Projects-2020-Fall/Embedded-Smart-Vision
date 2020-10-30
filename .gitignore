@@ -11,3 +11,4 @@ AnotherModule/__pycache__/AnotherModule.cpython-38.pyc
 *.pyc
 *.mp4
 .idea/Embedded-Smart-Vision.iml
+windowsenv/

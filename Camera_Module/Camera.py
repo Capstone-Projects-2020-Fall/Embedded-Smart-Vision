@@ -12,29 +12,26 @@ def show_image(img):
     cv.imshow('frame', img)
 
 
-def face_detection(cascade, image):
+def detect_face(cascade, image):
     image_copy = image.copy()
     grayscale = cv.cvtColor(image_copy, cv.COLOR_BGR2GRAY)
     faces = cascade.detectMultiScale(grayscale, scaleFactor=1.1, minNeighbors=5)
+    face_found = False
 
     for (x, y, w, h) in faces:
-        cv.rectangle(image_copy, (x, y), (x + w, y + h), (0, 255, 0), 15)
-    crop_image = image_copy[y: y + h, x: x + w]
-    return crop_image
+        face_found = True
+
+    return face_found
 
 
 class Camera:
     def __init__(self):
         self.cam = cv.VideoCapture(0)
         self.frame_size = (800, 550)
-        path = os.path.join(os.getcwd(), 'Videos/')
-        if not os.path.isdir(path):
-            os.mkdir(path)
-        path = path + 'video.mp4'
-        self.video = cv.VideoWriter(path, 0, 30, self.frame_size)
+        self.cascade = cv.CascadeClassifier('Camera_Module/face_data.xml')
+        self.recording = False
 
     def __del__(self):
-        self.video.release()
         self.cam.release()
         cv.destroyAllWindows()
 
@@ -44,5 +41,5 @@ class Camera:
         frame = cv.resize(frame, self.frame_size, interpolation=cv.INTER_NEAREST)
         norm = np.zeros(self.frame_size)
         norm = cv.normalize(frame, norm, 0, 255, cv.NORM_MINMAX)
-        self.video.write(norm)
-        return norm
+        found = detect_face(self.cascade, norm)
+        return norm, found

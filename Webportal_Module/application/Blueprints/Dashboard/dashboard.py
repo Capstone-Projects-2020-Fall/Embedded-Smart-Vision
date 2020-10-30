@@ -9,7 +9,7 @@ dashboard = Blueprint('dashboard', __name__, template_folder='templates')
 
 @dashboard.route('/dashboard')
 def show_live_video():
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', current_page='dashboard')
 
 
 def gen(stream):

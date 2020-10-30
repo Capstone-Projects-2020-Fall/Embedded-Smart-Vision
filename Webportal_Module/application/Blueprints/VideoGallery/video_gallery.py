@@ -24,7 +24,7 @@ def show_all_videos():
         video_with_tag = VideoWithTag(video_path, tags)
         tagged_videos.append(video_with_tag)
         print('Found video with this Path: ', video_path)
-    return render_template('gallery.html', taggedVideos=tagged_videos)
+    return render_template('gallery.html', taggedVideos=tagged_videos, current_page='videos')
 
 
 @video_gallery.route('/videoGallery/sort', methods=['POST'])
@@ -39,7 +39,7 @@ def show_tagged_videos():
         video_with_tag = VideoWithTag(video.path, video_tags)
         tagged_videos.append(video_with_tag)
 
-    return render_template('gallery.html', taggedVideos=tagged_videos)
+    return render_template('gallery.html', taggedVideos=tagged_videos, current_page='videos')
 
 @video_gallery.route('/grabVideo/<videoname>')
 def grab_video(videoname):
@@ -50,7 +50,7 @@ def grab_video(videoname):
 @video_gallery.route('/watchVideo/<videoname>')
 def watch_video(videoname):
     path = '/grabVideo/' + videoname
-    return render_template('video.html', tags='example', video=path)
+    return render_template('video.html', tags='example', video=path, current_page='videos')
 
 
 class VideoWithTag:

@@ -5,11 +5,15 @@
   {% block style %}{% endblock %}
 <section class="content">
   <section id="navigation" class="navigation">
-      <ul class="links">
-        <div class="link"><a href="{{ url_for('home_page.show_home_page') }}" class="text">Home</a></div>
-        <div class="link"><a href="{{ url_for('dashboard.show_live_video') }}" class="text">Dashboard</a></div>
-        <div class="link"><a href="{{ url_for('video_gallery.show_all_videos') }}" class="text">Videos</a></div>
+      <ul>
+        <li><a href="{{ url_for('home_page.show_home_page') }}" id="home">Home</a></li>
+        <li><a href="{{ url_for('dashboard.show_live_video') }}" id="dashboard">Dashboard</a></li>
+        <li><a href="{{ url_for('video_gallery.show_all_videos') }}" id="videos">Videos</a></li>
       </ul>
+    <script>
+      var current_page = '{{ current_page }}';
+      document.getElementById(current_page).className = "active";
+    </script>
   </section><section class="page">
     <header class="PageHeader">
       {% block header %}{% endblock %}

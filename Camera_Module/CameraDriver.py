@@ -1,10 +1,18 @@
 import os
+from _thread import start_new_thread
 from multiprocessing.connection import PipeConnection
+from datetime import datetime, timedelta
 
 from ModuleMessage import ModuleMessage
 
 from Camera_Module import Camera
 import cv2 as cv
+import numpy as np
+
+recording = False
+video_count = 0
+last_found = datetime.now()
+frames = list()
 
 _Minfo = {
     "version": 1,
@@ -30,12 +38,49 @@ def __proc_message__(conn: PipeConnection):
 
 
 # This contains the actual operation of the module which will be run every time
-def __operation__(cam, count):
+def __operation__(cam: Camera.Camera, conn: PipeConnection):
     ### ADD MODULE OPERATIONS HERE ###
-    frame = cam.grab_frame()
-    #path = 'Images/image%d.jpg' % count
-    #Camera.save_image(frame, path)
-    return frame
+    # Grab Frame and check if face was found
+    global recording, frames, last_found
+    frame, found = cam.grab_frame()
+
+    success, frame = cv.imencode('.jpg', frame)
+    frame_message = ModuleMessage("WPM", "New Frame", frame.tobytes())
+    conn.send(frame_message)
+
+    if found:
+        # Add frame to video and document time face was last found
+        last_found = datetime.now()
+        frames.append(frame)
+        # Start Recording if we aren't already
+        if not recording:
+            recording = True
+            print('starting recording')
+    else:
+        if recording:
+            # Add frame because we're recording
+            frames.append(frame)
+            current_time = datetime.now()
+            delta = current_time - last_found
+            # Face has not been present for too long, sto stop recording
+            if delta.seconds > 3:
+                frame_copy = frames.copy()
+                frames.clear()
+                start_new_thread(make_video, (frame_copy, conn, ))
+                recording = False
+
+
+def make_video(frames: list, conn: PipeConnection):
+    print('Making Video')
+    global video_count
+    video_count += 1
+    path = os.path.join(os.getcwd(), 'Videos', 'video%d.mp4' % video_count)
+    video = cv.VideoWriter(path, 0, 10, (800, 550))
+    for frame in frames:
+        video.write(frame)
+    video.release()
+    video_message = ModuleMessage('IPM', 'video', os.path.abspath(path))
+    conn.send(video_message)
 
 
 # Runs the modules functionality
@@ -52,24 +97,18 @@ def __load__(conn: PipeConnection):
                                   _Minfo["name"] + " done loading!")
     conn.send(setup_message)
 
+    #Make Directory for Videos
+    path = os.path.join(os.getcwd(), 'Videos/')
+    if not os.path.isdir(path):
+        os.mkdir(path)
+
     # Create a camera object
     cam = Camera.Camera()
-    count = 0
-
-    # Make Directory to Store Images
-    if not os.path.isdir('Images'):
-        os.mkdir('Images')
 
     running = True
     # While we are running do operations
     while running:
-        frame = __operation__(cam, count)
-        success, frame = cv.imencode('.jpg', frame)
-        frame_message = ModuleMessage("WPM", "New Frame", frame.tobytes())
-        conn.send(frame_message)
-        count += 1
-        if count > 1000:
-            running = False
+        __operation__(cam, conn)
         __proc_message__(conn)
 
     cam.__del__()
@@ -82,3 +121,9 @@ _Minfo["entry_point"] = __load__
 # Returns a dictionary containing information that describes the module
 def __module_info__():
     return _Minfo
+
+
+if __name__ == '__main__':
+    cam = Camera.Camera()
+    while True:
+        __operation__(cam)
