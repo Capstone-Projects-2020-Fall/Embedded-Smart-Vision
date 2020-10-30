@@ -20,8 +20,10 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 
     db.init_app(app)
-    #db.drop_all()
-    #db.create_all()
+
+    app.app_context().push()
+    db.drop_all()
+    db.create_all()
 
     from Webportal_Module.application.Blueprints.HomePage.home_page import home_page
     from Webportal_Module.application.Blueprints.Dashboard.dashboard import dashboard
