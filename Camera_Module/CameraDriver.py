@@ -44,8 +44,8 @@ def __operation__(cam: Camera.Camera, conn):
     global recording, frames, last_found
     frame, found = cam.grab_frame()
 
-    success, frame = cv.imencode('.jpg', frame)
-    frame_message = ModuleMessage("WPM", "New Frame", frame.tobytes())
+    success, image = cv.imencode('.jpg', frame)
+    frame_message = ModuleMessage("WPM", "New Frame", image.tobytes())
     conn.send(frame_message)
 
     if found:
