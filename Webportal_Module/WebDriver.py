@@ -47,7 +47,7 @@ def __operation__(conn):
     app = create_app()
     message_thread = threading.Thread(target=check_messages, args=(app, conn,), daemon=True)
     message_thread.start()
-    app.run()
+    app.run(host='0.0.0.0')
     pass
 
 
