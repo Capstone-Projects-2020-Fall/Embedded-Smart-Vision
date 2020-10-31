@@ -5,7 +5,7 @@ import os
 
 def add_video(path, tags):
     new_path = move_video(path)
-    video = Video(path=path)
+    video = Video(path=new_path)
     db.session.add(video)
     db.session.commit()
     for tag in tags:
@@ -25,6 +25,11 @@ def add_tags(videoid, tags):
 
 
 def move_video(path):
+    videos = Video.query.all()
+    total_videos = len(videos)
+    new_video_number = total_videos + 1
+    new_name = 'video%d.mp4' % new_video_number
     old_path = os.path.join(os.getcwd(), 'Videos', path)
-    new_path = os.path.join(video_directory, path)
+    new_path = os.path.join(video_directory, new_name)
     os.rename(old_path, new_path)
+    return new_name

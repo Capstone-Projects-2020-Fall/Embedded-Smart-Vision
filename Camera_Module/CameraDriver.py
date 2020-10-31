@@ -109,6 +109,8 @@ def __load__(conn):
                                   _Minfo["name"] + " done loading!")
     conn.send(setup_message)
 
+    update_video_count()
+
     #Make Directory for Videos
     path = os.path.join(os.getcwd(), 'Videos/')
     if not os.path.isdir(path):
@@ -125,6 +127,9 @@ def __load__(conn):
 
     cam.__del__()
 
+
+def update_video_count():
+    global video_count
 
 # Set the entry point function
 _Minfo["entry_point"] = __load__
