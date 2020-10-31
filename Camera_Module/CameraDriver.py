@@ -43,7 +43,7 @@ def __operation__(cam: Camera.Camera, conn):
     ### ADD MODULE OPERATIONS HERE ###
     # Grab Frame and check if face was found
     global recording, frames, last_found
-    frame, found = cam.grab_frame()
+    frame, found, face = cam.grab_frame()
 
     success, image = cv.imencode('.jpg', frame)
     frame_message = ModuleMessage("WPM", "New Frame", image.tobytes())
@@ -53,7 +53,7 @@ def __operation__(cam: Camera.Camera, conn):
         # Add frame to video and document time face was last found
         last_found = datetime.now()
         frames.append(frame)
-        faces.append(frame)
+        faces.append(face)
         # Start Recording if we aren't already
         if not recording:
             recording = True

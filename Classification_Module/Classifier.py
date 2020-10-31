@@ -15,25 +15,22 @@ class Classifier:
     def __del__(self):
         pass
 
-    def classify(self, face: np.ndarray):
-        print('attempting to grab embedding')
-        detections = self.embedding_model.extract(face, threshold=0.2)
-        print('attempting to classify')
-        if len(detections) > 0:
-            embedding = detections[0].get('embedding')
-            embedding = embedding.reshape(1, -1)
-            classification = self.classifier_model.predict(embedding)
-            proba = self.classifier_model.predict_proba(embedding)
-            prob = proba[0, classification[0]] * 100
-        else:
-            classification = ''
-            prob = 100.000
+    def classify(self, embedding):
+        embedding = embedding.reshape(1, -1)
+        classification = self.classifier_model.predict(embedding)
+        proba = self.classifier_model.predict_proba(embedding)
+        prob = proba[0, classification[0]] * 100
+
         return classification, prob
 
     def apply_tags(self, faces: list):
         tags = set()
-        for face in faces:
-            tag, prob = self.classify(face)
+        faces = np.asarray(faces)
+        print('Attempting to grab embeddings')
+        embeddings = self.embedding_model.embeddings(faces)
+        print('Attempting to classify embeddings')
+        for embedding in embeddings:
+            tag, prob = self.classify(embedding)
             if prob < 60.000:
                 tags.add('Unknown')
             else:
