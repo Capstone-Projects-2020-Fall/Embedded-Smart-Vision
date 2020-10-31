@@ -6,6 +6,7 @@ from keras_facenet import FaceNet
 import cv2 as cv
 
 
+
 class Classifier:
     def __init__(self):
         self.embedding_model = FaceNet()
@@ -15,9 +16,9 @@ class Classifier:
         pass
 
     def classify(self, face: np.ndarray):
-        #print('attempting to grab embedding')
-        detections = self.embedding_model.extract(face)
-        #print('attempting to classify')
+        print('attempting to grab embedding')
+        detections = self.embedding_model.extract(face, threshold=0.2)
+        print('attempting to classify')
         if len(detections) > 0:
             embedding = detections[0].get('embedding')
             embedding = embedding.reshape(1, -1)
