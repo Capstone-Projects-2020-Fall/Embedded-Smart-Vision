@@ -7,8 +7,8 @@
 {% endblock %}
 
 {% block content %}
-  <video id="video" width = "800" height="550" controls>
-    <source src={{ video }} type="video/mp4">
+  <video id="video" width = "800" height="550" controls autoplay loop>
+    <source src={{ url_for('static', filename=video) }} type="video/mp4">
       Your Browser Does Not Support The Video Tag
     </video>
 {% endblock %}

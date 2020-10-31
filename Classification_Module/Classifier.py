@@ -29,13 +29,10 @@ class Classifier:
             prob = 100.000
         return classification, prob
 
-    def apply_tags(self, path):
-        video = cv.VideoCapture(path)
-        success, frame = video.read()
+    def apply_tags(self, faces: list):
         tags = set()
-        while success:
-            tag, prob = self.classify(frame)
-
+        for face in faces:
+            tag, prob = self.classify(face)
             if prob < 60.000:
                 tags.add('Unknown')
             else:
@@ -43,5 +40,4 @@ class Classifier:
                     tags.add('Amanda')
                 elif tag == 1:
                     tags.add('Jimmy')
-            success, frame = video.read()
         return tags
