@@ -74,8 +74,8 @@ def make_video(frames: list, conn):
     print('Making Video')
     global video_count
     video_count += 1
-    path = os.path.join(os.getcwd(), 'Videos', 'video%d.avi' % video_count)
-    video = cv.VideoWriter(path, cv.VideoWriter_fourcc('M','J','P','G'), 10, (800, 550))
+    path = os.path.join(os.getcwd(), 'Videos', 'video%d.mp4' % video_count)
+    video = cv.VideoWriter(path, cv.VideoWriter_fourcc('m','p','4','v'), 10, (800, 550))
     for frame in frames:
         video.write(frame)
     video.release()
