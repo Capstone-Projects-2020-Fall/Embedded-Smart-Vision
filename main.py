@@ -1,8 +1,9 @@
 import ModuleList
 from multiprocessing import Process, Pipe
-
+from _thread import *
 from Config import cfg_transaction, Config, config_tags
 import ModuleConnection
+from time import sleep
 
 # Actually starts up the process handling a given module and returns back the name followed by the process
 from ModuleMessage import ModuleMessage
@@ -11,6 +12,14 @@ if __name__ == '__main__':
     # Our global variables, these are used to access state based information
     cfg: Config = Config()
     cfg.load_config()
+
+
+# Prints out the status of the running processes on an interval
+def process_monitor(pool):
+    while True:
+        sleep(60)
+        for p in pool:
+            print(p , ": " , pool[p].get('proc').is_alive())
 
 
 def run_module(module_info):
@@ -92,6 +101,7 @@ def start():
     # Create a pipe for the program host to send and receive data on
     host_pipe, send_end = Pipe(duplex=True)
 
+    start_new_thread(process_monitor, (process_pool,))
     running = True
     while running:
         message_handler(module_connections)

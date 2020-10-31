@@ -55,17 +55,7 @@ def __operation__():
 
 # Runs the modules functionality
 def __load__(conn):
-    # Let the world know we are loading a new object
-    setup_message = ModuleMessage("HIO",
-                                  "loading",
-                                  "Loading " + _Minfo["name"] + "...")
-    conn.send(setup_message)
-
-    # Let the world know we are loading a new object
-    setup_message = ModuleMessage("HIO",
-                                  "ready",
-                                  _Minfo["name"] + " done loading!")
-    conn.send(setup_message)
+    
 
     running = True
     # While we are running do operations
