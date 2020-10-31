@@ -16,7 +16,7 @@ if __name__ == '__main__':
 
 # Prints out the status of the running processes on an interval
 def process_monitor(pool):
-    while True:
+    while False:
         sleep(60)
         for p in pool:
             print(p , ": " , pool[p].get('proc').is_alive())

@@ -2,7 +2,7 @@ import tensorflow as tf
 import numpy as np
 import sklearn
 import pickle
-from keras_facenet import FaceNet
+from .knet import FaceNet
 import cv2 as cv
 
 
