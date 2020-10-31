@@ -1,5 +1,7 @@
 import threading
 from multiprocessing import Pipe
+from queue import Queue
+
 from ModuleMessage import ModuleMessage
 from Webportal_Module.application import create_app, DBInterface, video_stream
 
@@ -11,8 +13,7 @@ _Minfo = {
     "message_code": "WPM",
 }
 
-path = None
-tags = None
+videoIDs = Queue(0)
 
 
 # Processes any messages left on the queue
@@ -28,15 +29,13 @@ def __proc_message__(conn):
             if m.target == "WPM" and m.tag == 'New Frame':
                 video_stream.update_frame(m.message)
             if m.target == "WPM" and m.tag == "New Video Path":
-                path = m.message
-                print(path)
+                path = m.message[0]
+                tags = m.message[1]
+                videoID = DBInterface.add_video(path, tags)
+                videoIDs.put(videoID)
             if m.target == "WPM" and m.tag == "New Video Tags":
                 tags = m.message
-                print(tags)
-            if tags is not None and path is not None:
-                DBInterface.add_video(path, tags)
-                tags = None
-                path = None
+                DBInterface.add_tags(videoIDs.get(), tags)
         else:
             print("Error! received unknown object as a message!")
 

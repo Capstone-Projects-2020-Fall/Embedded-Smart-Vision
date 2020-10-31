@@ -2,7 +2,7 @@
 import os
 from base64 import b64encode
 
-from flask import Blueprint, render_template, send_file, request
+from flask import Blueprint, render_template, send_from_directory, request
 from ...models import Video, Tag
 from ... import video_directory
 import cv2 as cv
@@ -41,16 +41,16 @@ def show_tagged_videos():
 
     return render_template('gallery.html', taggedVideos=tagged_videos, current_page='videos')
 
-@video_gallery.route('/grabVideo/<videoname>')
-def grab_video(videoname):
-    print('Attempting to grab this video: ' + video_directory + videoname)
-    return send_file(video_directory + videoname)
-
 
 @video_gallery.route('/watchVideo/<videoname>')
 def watch_video(videoname):
-    path = '/grabVideo/' + videoname
-    return render_template('video.html', tags='example', video=path, current_page='videos')
+    video = Video.query.filter_by(path=videoname).first()
+    tags = Tag.query.filter_by(videoID=video.id).all()
+    tag_string = ''
+    for tag in tags:
+        tag_string = tag_string + tag.classification + ', '
+    tag_string = tag_string[0:len(tag_string) - 2]
+    return render_template('video.html', tags=tag_string, video=videoname, current_page='videos')
 
 
 class VideoWithTag:

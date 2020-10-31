@@ -4,14 +4,12 @@ import os
 from Webportal_Module.application.VideoStream.VideoFeed import VideoStream
 
 db = SQLAlchemy()
-root_directory = os.path.abspath(os.path.join(os.getcwd(), 'application'))
+root_directory = os.path.abspath(os.path.join(os.getcwd(), 'Webportal_Module', 'application'))
 root_directory = root_directory + '/'
-print(root_directory)
-video_directory = os.path.abspath(os.path.join(os.getcwd(), 'Videos'))
-video_directory = video_directory + '/'
-print(video_directory)
 
-print(root_directory)
+video_directory = os.path.abspath(os.path.join(root_directory, 'static'))
+video_directory = video_directory + '/'
+
 video_stream = VideoStream()
 
 

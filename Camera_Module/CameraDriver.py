@@ -13,6 +13,7 @@ recording = False
 video_count = 0
 last_found = datetime.now()
 frames = list()
+faces = list()
 
 _Minfo = {
     "version": 1,
@@ -42,7 +43,7 @@ def __operation__(cam: Camera.Camera, conn):
     ### ADD MODULE OPERATIONS HERE ###
     # Grab Frame and check if face was found
     global recording, frames, last_found
-    frame, found = cam.grab_frame()
+    frame, found, face = cam.grab_frame()
 
     success, image = cv.imencode('.jpg', frame)
     frame_message = ModuleMessage("WPM", "New Frame", image.tobytes())
@@ -52,6 +53,7 @@ def __operation__(cam: Camera.Camera, conn):
         # Add frame to video and document time face was last found
         last_found = datetime.now()
         frames.append(frame)
+        faces.append(face)
         # Start Recording if we aren't already
         if not recording:
             recording = True
@@ -65,21 +67,31 @@ def __operation__(cam: Camera.Camera, conn):
             # Face has not been present for too long, sto stop recording
             if delta.seconds > 3:
                 frame_copy = frames.copy()
+                face_copy = faces.copy()
                 frames.clear()
-                start_new_thread(make_video, (frame_copy, conn, ))
+                faces.clear()
+                start_new_thread(make_video, (frame_copy, face_copy, conn, ))
                 recording = False
 
 
-def make_video(frames: list, conn):
+def make_video(frames: list, faces: list, conn):
     print('Making Video')
     global video_count
     video_count += 1
     path = os.path.join(os.getcwd(), 'Videos', 'video%d.mp4' % video_count)
-    video = cv.VideoWriter(path, cv.VideoWriter_fourcc('m','p','4','v'), 10, (800, 550))
+    video = cv.VideoWriter(path, 0, 10, (800, 550))
     for frame in frames:
         video.write(frame)
     video.release()
-    video_message = ModuleMessage('IPM', 'video', os.path.abspath(path))
+
+    #Upload video to database
+    path = os.path.basename(path)
+    tag = ('face',)
+    add_video_message = ModuleMessage("WPM", "New Video Path", (os.path.basename(path), tag))
+    conn.send(add_video_message)
+
+    #Send faces to classify
+    video_message = ModuleMessage('IPM', 'video', faces)
     conn.send(video_message)
 
 

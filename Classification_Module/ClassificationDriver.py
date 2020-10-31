@@ -28,21 +28,11 @@ def __proc_message__(conn):
             # Check if a message code exists for the given module
             ### HANDLE MESSAGES HERE ###
             if m.target == 'IPM' and m.tag == 'video':
-                print('Got Video: ', m.message)
-                path = m.message
-                print(os.path.basename(path))
-                tags = classifier.apply_tags(path)
-                tags.add('face')
-                contents = path + ' ' + str(tags) + '\n'
-                global tagfile
-                tagfile.write(contents)
-                tagfile.close()
-                tagfile = open('Videos/TaggedVideos', 'a')
-                print('Adding to Database')
-                add_video_message = ModuleMessage("WPM", "New Video Path", os.path.basename(path))
-                conn.send(add_video_message)
+                faces = m.message
+                tags = classifier.apply_tags(faces)
                 add_tags_message = ModuleMessage("WPM", "New Video Tags", tags)
                 conn.send(add_tags_message)
+                print('done classifying!')
         else:
             print("Error! received unknown object as a message!")
 
