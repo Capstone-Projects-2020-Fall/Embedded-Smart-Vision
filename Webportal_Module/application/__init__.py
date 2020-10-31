@@ -19,10 +19,6 @@ def create_app():
 
     db.init_app(app)
 
-    app.app_context().push()
-    db.drop_all()
-    db.create_all()
-
     from Webportal_Module.application.Blueprints.HomePage.home_page import home_page
     from Webportal_Module.application.Blueprints.Dashboard.dashboard import dashboard
     from Webportal_Module.application.Blueprints.VideoGallery.video_gallery import video_gallery
