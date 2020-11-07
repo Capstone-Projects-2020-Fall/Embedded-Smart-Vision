@@ -2,13 +2,16 @@
 import struct
 import threading
 from queue import Queue
-from socket import socket
-from MessagePack import MessagePack, MsgType, get_bytes, Header
+import socket
+from .MessagePack import MessagePack, MsgType, get_bytes, Header
+
+from SocketConnection_Module.IncomingThread import IncomingThread
+from .OutgoingThread import OutgoingThread
 
 
 class ConnectionThread(threading.Thread):
 
-    def __init__(self):
+    def __init__(self, node_name='UnamedNode'):
         """
         :param name:        The name of the thread
         :param inc_queue:   This queue will hold all of the incoming information, we should only be pushing to this
@@ -18,7 +21,7 @@ class ConnectionThread(threading.Thread):
         threading.Thread.__init__(self)
         self.running = False
         self.central_server_name = None
-
+        self.node_node = node_name
         # The socket connection
         self.socket_connection = None
 
@@ -26,8 +29,8 @@ class ConnectionThread(threading.Thread):
         self.incoming_thread = None
         self.outgoing_thread = None
         # Queues to safely communicate data between the threads
-        self.incoming_queue = None
-        self.outgoing_queue = None
+        self.incoming_queue: Queue = Queue()
+        self.outgoing_queue: Queue = Queue()
 
     def run(self):
         print("Starting: " + self.name)
@@ -35,17 +38,18 @@ class ConnectionThread(threading.Thread):
         while self.running:
             pass
 
+    def handle_message(self, msg):
+        pass
+
     def connect_to_server(self):
         # Create and configure the socket
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.socket_connection = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print("\n")
         # Loop around to establish connection while using timeout to allow for interruption
         while True:
             print("Attempting to connect....")
-            try:
-                s.connect((socket.gethostname(), 1234))
-            except socket.timeout:
-                continue
+
+            self.socket_connection.connect((socket.gethostname(), 1234))
 
             print("\nConnection established\n\nWaiting for next message....\n")
             break
@@ -54,24 +58,29 @@ class ConnectionThread(threading.Thread):
 
         try:
             print("Establishing connection with central server...")
-            msg_len = s.recv(4)
+            # Receive the central servers name
+            msg_len = self.socket_connection.recv(4)
             msg_len = struct.unpack('i', msg_len)[0]
-            self.central_server_name = s.recv(msg_len).decode("utf-8")
-            print("RECEIVED - Central server name: ", central_server_name)
-            print("SENDING - Node Client Name: ", node_name)
-            msg_len = struct.pack('i', len(node_name))
-            s.send(msg_len)
-            s.send(bytes(node_name, "utf-8"))
+            self.central_server_name = self.socket_connection.recv(msg_len).decode("utf-8")
 
-            msg = MessagePack(message_type=MsgType.COMMAND)
-            str_cmd = StreamCommand(StreamCommand.START_STREAM)
-            msg.set_data(str_cmd)
+            # Send the name of the node
+            msg_len = struct.pack('i', len(self.node_node))
+            self.socket_connection.send(msg_len)
+            self.socket_connection.send(bytes(self.node_node, "utf-8"))
 
-            byte_data = msg.create_byte_array()
-            s.sendall(byte_data)
+            # Start the incoming and outgoing threads
+            self.incoming_thread = IncomingThread(self.node_node,
+                                                  self.incoming_queue,
+                                                  self.socket_connection)
 
+            self.outgoing_thread = OutgoingThread(self.socket_connection,
+                                                  self.node_node)
+
+            while True:
+                msg = self.incoming_queue.get()
+                self.handle_message(msg)
         except KeyboardInterrupt:
-            s.close()
+            self.socket_connection.close()
             exit(0)
 
     def set_running(self, option: bool):
