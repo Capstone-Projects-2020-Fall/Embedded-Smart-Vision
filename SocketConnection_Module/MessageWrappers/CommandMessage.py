@@ -1,7 +1,7 @@
 from enum import IntEnum
 
 # Enumerator to define the different type of command messages
-from SocketServer.MessageWrappers.BaseMessageData import BaseMessageData
+from .BaseMessageData import BaseMessageData
 
 
 class CmdTypes(IntEnum):

@@ -70,7 +70,7 @@ def __operation__(cam: Camera.Camera, conn):
                 face_copy = faces.copy()
                 frames.clear()
                 faces.clear()
-                start_new_thread(make_video, (frame_copy, face_copy, conn, ))
+                start_new_thread(make_video, (frame_copy, face_copy, conn,))
                 recording = False
 
 
@@ -79,18 +79,18 @@ def make_video(frames: list, faces: list, conn):
     global video_count
     video_count += 1
     path = os.path.join(os.getcwd(), 'Videos', 'video%d.mp4' % video_count)
-    video = cv.VideoWriter(path, cv.VideoWriter_fourcc('a','v','c','1'), 10, (800, 550))
+    video = cv.VideoWriter(path, cv.VideoWriter_fourcc('a', 'v', 'c', '1'), 10, (800, 550))
     for frame in frames:
         video.write(frame)
     video.release()
 
-    #Upload video to database
+    # Upload video to database
     path = os.path.basename(path)
     tag = ('face',)
     add_video_message = ModuleMessage("WPM", "New Video Path", (os.path.basename(path), tag))
     conn.send(add_video_message)
 
-    #Send faces to classify
+    # Send faces to classify
     video_message = ModuleMessage('IPM', 'video', faces)
     conn.send(video_message)
 
@@ -111,7 +111,7 @@ def __load__(conn):
 
     update_video_count()
 
-    #Make Directory for Videos
+    # Make Directory for Videos
     path = os.path.join(os.getcwd(), 'Videos/')
     if not os.path.isdir(path):
         os.mkdir(path)
@@ -130,6 +130,7 @@ def __load__(conn):
 
 def update_video_count():
     global video_count
+
 
 # Set the entry point function
 _Minfo["entry_point"] = __load__

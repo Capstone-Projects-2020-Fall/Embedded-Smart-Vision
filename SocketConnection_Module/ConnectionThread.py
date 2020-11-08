@@ -11,7 +11,7 @@ from .OutgoingThread import OutgoingThread
 
 class ConnectionThread(threading.Thread):
 
-    def __init__(self, node_name='UnamedNode'):
+    def __init__(self, node_name='UnamedNode', context=None):
         """
         :param name:        The name of the thread
         :param inc_queue:   This queue will hold all of the incoming information, we should only be pushing to this
@@ -32,14 +32,17 @@ class ConnectionThread(threading.Thread):
         self.incoming_queue: Queue = Queue()
         self.outgoing_queue: Queue = Queue()
 
+        # Holds a reference to the parent context
+        self.ctx = context
+
     def run(self):
         print("Starting: " + self.name)
         self.running = True
         while self.running:
-            pass
+            self.connect_to_server()
 
     def handle_message(self, msg):
-        pass
+        print(msg)
 
     def connect_to_server(self):
         # Create and configure the socket
@@ -68,6 +71,7 @@ class ConnectionThread(threading.Thread):
             self.socket_connection.send(msg_len)
             self.socket_connection.send(bytes(self.node_node, "utf-8"))
 
+            self.socket_connection.send(struct.pack('i', 0))
             # Start the incoming and outgoing threads
             self.incoming_thread = IncomingThread(self.node_node,
                                                   self.incoming_queue,
@@ -76,6 +80,7 @@ class ConnectionThread(threading.Thread):
             self.outgoing_thread = OutgoingThread(self.socket_connection,
                                                   self.node_node)
 
+            self.ctx.is_connected = True
             while True:
                 msg = self.incoming_queue.get()
                 self.handle_message(msg)
