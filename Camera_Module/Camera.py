@@ -16,17 +16,12 @@ def detect_face(cascade, image):
     image_copy = image.copy()
     grayscale = cv.cvtColor(image_copy, cv.COLOR_BGR2GRAY)
     faces = cascade.detectMultiScale(grayscale, scaleFactor=1.1, minNeighbors=5)
-    face_found = False
-
-    x1, y1, w1, h1 = 0, 0, 0, 0
-
-    for (x, y, w, h) in faces:
-        x1, y1, w1, h1 = x, y, w, h
+    if len(faces) > 0:
         face_found = True
+    else:
+        face_found = False
 
-    face = image_copy[y1: y1 + h1, x1: x1 + w1]
-
-    return face_found, face
+    return face_found
 
 
 class Camera:
@@ -46,5 +41,5 @@ class Camera:
         frame = cv.resize(frame, self.frame_size, interpolation=cv.INTER_NEAREST)
         norm = np.zeros(self.frame_size)
         norm = cv.normalize(frame, norm, 0, 255, cv.NORM_MINMAX)
-        found, face = detect_face(self.cascade, norm)
-        return norm, found, face
+        found = detect_face(self.cascade, norm)
+        return norm, found

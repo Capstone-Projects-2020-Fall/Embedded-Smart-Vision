@@ -7,7 +7,6 @@ from ModuleMessage import ModuleMessage
 
 from Camera_Module import Camera
 import cv2 as cv
-import numpy as np
 
 recording = False
 video_count = 0
@@ -33,7 +32,7 @@ def __proc_message__(conn):
         if isinstance(m, ModuleMessage):
             # Check if a message code exists for the given module
             ### HANDLE MESSAGES HERE ###
-            print("User IO: ", m.message)
+            pass
         else:
             print("Error! received unknown object as a message!")
 
@@ -43,17 +42,20 @@ def __operation__(cam: Camera.Camera, conn):
     ### ADD MODULE OPERATIONS HERE ###
     # Grab Frame and check if face was found
     global recording, frames, last_found
-    frame, found, face = cam.grab_frame()
+    frame, found = cam.grab_frame()
 
     success, image = cv.imencode('.jpg', frame)
     frame_message = ModuleMessage("WPM", "New Frame", image.tobytes())
     conn.send(frame_message)
 
     if found:
+        # Check who is in the frame
+        classify_message = ModuleMessage("IPM", "New Frame", frame)
+        conn.send(classify_message)
         # Add frame to video and document time face was last found
         last_found = datetime.now()
         frames.append(frame)
-        faces.append(face)
+        faces.append(frame)
         # Start Recording if we aren't already
         if not recording:
             recording = True

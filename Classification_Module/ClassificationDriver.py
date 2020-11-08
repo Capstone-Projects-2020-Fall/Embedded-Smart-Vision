@@ -1,10 +1,6 @@
-import os
-from multiprocessing import Pipe
-
 from ModuleMessage import ModuleMessage
 from Classification_Module.Classifier import Classifier
 import cv2 as cv
-import numpy as np
 
 tagfile = open('Videos/TaggedVideos', 'w')
 classifier = Classifier()
@@ -33,6 +29,11 @@ def __proc_message__(conn):
                 add_tags_message = ModuleMessage("WPM", "New Video Tags", tags)
                 conn.send(add_tags_message)
                 print('done classifying!')
+            if m.target == 'IPM' and m.tag == 'New Frame':
+                frame = m.message
+                name = classifier.classify(frame)
+                classified_message = ModuleMessage("CM", "Classification", name)
+                conn.send(classified_message)
         else:
             print("Error! received unknown object as a message!")
 
