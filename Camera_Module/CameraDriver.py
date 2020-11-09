@@ -4,7 +4,7 @@ from multiprocessing import connection
 from datetime import datetime, timedelta
 
 from ModuleMessage import ModuleMessage
-
+from SocketConnection_Module import Socket_Connection_Module_interface as scmi
 from Camera_Module import Camera
 import cv2 as cv
 import numpy as np
@@ -44,7 +44,7 @@ def __operation__(cam: Camera.Camera, conn):
     # Grab Frame and check if face was found
     global recording, frames, last_found
     frame, found, face = cam.grab_frame()
-
+    scmi.update_stream_frame(conn, frame)
     success, image = cv.imencode('.jpg', frame)
     frame_message = ModuleMessage("WPM", "New Frame", image.tobytes())
     conn.send(frame_message)

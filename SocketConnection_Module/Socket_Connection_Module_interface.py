@@ -12,5 +12,5 @@ def start_stream_message(conn: Connection):
 
 # Sends a message to the socket client updating the latest frame
 def update_stream_frame(conn: Connection, image):
-    frame_message = ModuleMessage("SCM", "update_stream_frame", image)
+    frame_message = ModuleMessage("SCM", 'update_stream_frame', image)
     conn.send(frame_message)

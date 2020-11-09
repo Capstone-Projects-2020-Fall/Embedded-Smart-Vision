@@ -11,7 +11,7 @@ from .OutgoingThread import OutgoingThread
 
 class ConnectionThread(threading.Thread):
 
-    def __init__(self, node_name='UnamedNode', context=None):
+    def __init__(self, node_name='UnnamedNode', context=None):
         """
         :param name:        The name of the thread
         :param inc_queue:   This queue will hold all of the incoming information, we should only be pushing to this

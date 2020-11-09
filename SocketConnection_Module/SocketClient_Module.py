@@ -4,31 +4,35 @@ from _thread import start_new_thread
 from ModuleMessage import ModuleMessage
 from SocketConnection_Module.ConnectionThread import ConnectionThread
 import time
-
+import ProgramHostInterface as phi
 from SocketConnection_Module.StreamingConnectionThread import StreamingConnectionThread
 import cv2
 
+
 class SocketClientModule:
-    def __init__(self, conn):
+    def __init__(self, prgh_conn):
         self.version = 1
         self.name = "socket client module"
         self.entry_point = self.__load__
         self.message_code = "SCM"
 
-        self.conn = conn
+        self.prgh_conn = prgh_conn
         self.running = False
 
+        # The text name of this node
+        self.node_name = phi.get_config_value(self.prgh_conn, "node_name")
         # Tells us if the central server connection is established or not
         self.is_connected = False
-
+        self.streaming_server_is_connected = False
         # noinspection PyTypeChecker
-        self.main_connection_thread: ConnectionThread = ConnectionThread(context=self)
-        self.streaming_connection_thread: StreamingConnectionThread = StreamingConnectionThread()
+        self.main_connection_thread: ConnectionThread = ConnectionThread(node_name=self.node_name, context=self)
+        # noinspection PyTypeChecker
+        self.streaming_connection_thread: StreamingConnectionThread = None
 
     def __proc_message__(self):
         # if we receive a message on the connection act on it
-        if self.conn.poll():
-            m = self.conn.recv()
+        if self.prgh_conn.poll():
+            m = self.prgh_conn.recv()
             # Verify that the sender used the proper data type to send the message
             if isinstance(m, ModuleMessage):
                 # Check if a message code exists for the given module
@@ -42,11 +46,16 @@ class SocketClientModule:
                     start_new_thread(self.start_stream, ())
                 elif m.target == 'SCM' and m.tag == 'update_stream_frame':
                     ## This handles incoming frames to be sent on the stream thread
-                    print("Updating stream thread")
-                    print("--Received Data--\n", m.message, "\n\n")
-                    img = cv2.imdecode(m.message, cv2.IMREAD_COLOR)
-                    
-
+                    # img = cv2.imdecode(m.message, cv2.IMREAD_COLOR)
+                    if self.streaming_server_is_connected:
+                        if self.streaming_connection_thread is None:
+                            raise Exception("ERROR: SocketClient_Module, the streaming"
+                                            " thread is supposed to be connected but the thread was not set!")
+                        else:
+                            # if everything is all good we can attempt to update the frame
+                            self.streaming_connection_thread.update_frame(m.message)
+                    else:
+                        print("Streaming server is not connected!")
             else:
                 print("Error! received unknown object as a message!")
 
@@ -61,7 +70,8 @@ class SocketClientModule:
         self.is_connected = False
 
         self.main_connection_thread.start()
-
+        # We will start the stream by default
+        self.start_stream()
         # While we are running do operations
         while running:
             self.__operation__()
@@ -72,6 +82,8 @@ class SocketClientModule:
         # Internal method to encapsulate repeated code
         def _start_stream():
             print("Starting new stream")
+            self.streaming_connection_thread = StreamingConnectionThread(self)
+            self.streaming_connection_thread.start()
 
         if self.is_connected:
             _start_stream()

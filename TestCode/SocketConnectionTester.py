@@ -1,4 +1,6 @@
 # This is functions that can be used to test the socket connection module
+import time
+
 import SocketConnection_Module.SocketClient_Module as scm
 from multiprocessing import Process, Pipe
 from SocketConnection_Module import Socket_Connection_Module_interface as scmi
@@ -29,8 +31,10 @@ def test_send_frame_message_to_scm():
     test_image = cv2.imread('TestPhoto.jpg')
     success, to_send = cv2.imencode('.jpg', test_image)
 
+    scmi.start_stream_message(p)
+
+    time.sleep(2)
     scmi.update_stream_frame(p, to_send)
-    print("--Sent Data--\n", to_send, "\n\n")
 
     while True:
         pass

@@ -13,12 +13,12 @@ class config_tags:
 
 # Wrapper class to contain the information about a config update we want to do
 class cfg_transaction:
-    def __init__(self, key, data, set=True, reply=-1):
+    def __init__(self, key, data=None, is_set_var=True, reply=None):
         # Which key do we want to access
         self.key = key
         # What do we want to set it to
         self.data = data
-        self.set = set
+        self.is_set_var = is_set_var
         self.reply = reply
 
 
@@ -33,7 +33,7 @@ class Config:
     # Set a config variable
     def var_transaction(self, data: cfg_transaction):
         print(data.key)
-        if data.set:
+        if data.is_set_var:
             if data.key in self.vars:
                 # if the key in the data is a valid variable
                 self.vars[data.key] = data.data
