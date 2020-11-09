@@ -14,3 +14,14 @@ def start_stream_message(conn: Connection):
 def update_stream_frame(conn: Connection, image):
     frame_message = ModuleMessage("SCM", 'update_stream_frame', image)
     conn.send(frame_message)
+
+
+# Send a test message over the network
+def send_test_message(conn: Connection, text):
+    msg = ModuleMessage("SCM", 'network_message', text, optional_tag='send_test_message')
+    conn.send(msg)
+
+
+def send_video_file(conn: Connection, path):
+    msg = ModuleMessage("SCM", 'network_message', path, optional_tag='send_video')
+    conn.send(msg)

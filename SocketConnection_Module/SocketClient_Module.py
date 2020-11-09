@@ -6,6 +6,7 @@ from SocketConnection_Module.ConnectionThread import ConnectionThread
 import time
 import ProgramHostInterface as phi
 from SocketConnection_Module.StreamingConnectionThread import StreamingConnectionThread
+from SocketConnection_Module.NetworkMessageInterface import NetworkMessageInterface
 import cv2
 
 
@@ -28,6 +29,8 @@ class SocketClientModule:
         self.main_connection_thread: ConnectionThread = ConnectionThread(node_name=self.node_name, context=self)
         # noinspection PyTypeChecker
         self.streaming_connection_thread: StreamingConnectionThread = None
+
+        self.NMI = NetworkMessageInterface(self.main_connection_thread.put_on_out_queue)
 
     def __proc_message__(self):
         # if we receive a message on the connection act on it
@@ -56,6 +59,10 @@ class SocketClientModule:
                             self.streaming_connection_thread.update_frame(m.message)
                     else:
                         print("Streaming server is not connected!")
+                elif m.target == self.message_code and m.tag == 'network_message':
+                    print("Handling network message")
+                    ## We will handle this as a network message
+                    self.NMI.handle_network_message(m.optional_tag, m.message)
             else:
                 print("Error! received unknown object as a message!")
 

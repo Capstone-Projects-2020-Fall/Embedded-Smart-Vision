@@ -19,6 +19,7 @@ class ConnectionThread(threading.Thread):
         """
         # Call the supers init function
         threading.Thread.__init__(self)
+        self.name = 'Connection Thread'
         self.running = False
         self.central_server_name = None
         self.node_node = node_name
@@ -41,8 +42,14 @@ class ConnectionThread(threading.Thread):
         while self.running:
             self.connect_to_server()
 
+        print("Returning from connection thread")
+
     def handle_message(self, msg):
         print(msg)
+
+    def put_on_out_queue(self, data):
+        print("Putting message on queue")
+        self.outgoing_queue.put(data)
 
     def connect_to_server(self):
         # Create and configure the socket
@@ -77,10 +84,13 @@ class ConnectionThread(threading.Thread):
                                                   self.incoming_queue,
                                                   self.socket_connection)
 
-            self.outgoing_thread = OutgoingThread(self.socket_connection,
-                                                  self.node_node)
+            self.outgoing_thread = OutgoingThread(self.outgoing_queue,
+                                                  self.socket_connection)
+
+            self.outgoing_thread.start()
 
             self.ctx.is_connected = True
+
             while True:
                 msg = self.incoming_queue.get()
                 self.handle_message(msg)

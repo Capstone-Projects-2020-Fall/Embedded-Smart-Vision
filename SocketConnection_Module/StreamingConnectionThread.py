@@ -6,12 +6,14 @@ import threading
 from queue import Queue
 
 import cv2
+import numpy as np
 
 
 class StreamingConnectionThread(threading.Thread):
 
     def __init__(self, context):
         threading.Thread.__init__(self)
+        self.name = 'Streaming Connection Thread'
         # Holds the latest frame
         self.latest_frames = Queue()
         self.running = False
@@ -35,9 +37,13 @@ class StreamingConnectionThread(threading.Thread):
             # Check if the streaming server is connected
             if self.ctx.streaming_server_is_connected:
                 # Pickle our data to get a byte array
-                data = pickle.dumps(frame)
+                data = cv2.imencode('.jpg', frame)[1].tostring()
+                # pickle.dumps(frame)
+
                 # Pack up and send the length of our frame follow by the frame data
-                self.conn.sendall(struct.pack('I', len(data)) + data)
+                msg_len = struct.pack('I', len(data))
+
+                self.conn.sendall(msg_len + data)
 
     # Connect to the central server
     def connect_central(self):
