@@ -37,8 +37,7 @@ class StreamingConnectionThread(threading.Thread):
             # Check if the streaming server is connected
             if self.ctx.streaming_server_is_connected:
                 # Pickle our data to get a byte array
-                data = cv2.imencode('.jpg', frame)[1].tostring()
-                # pickle.dumps(frame)
+                data = pickle.dumps(frame) # cv2.imencode('.jpg', frame)[1].tobytes()
 
                 # Pack up and send the length of our frame follow by the frame data
                 msg_len = struct.pack('I', len(data))

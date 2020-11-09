@@ -46,8 +46,8 @@ class OutgoingThread(threading.Thread):
                 self.send_video_to_server(message.var1)
 
     # Sends a given video link to the central server
-    def send_video_to_server(self, link):
-        cap = cv2.VideoCapture(link)
+    def send_video_to_server(self, path):
+        cap = cv2.VideoCapture(path)
 
         if cap.isOpened() is False:
             raise Exception("Failed to open video to send to server")
