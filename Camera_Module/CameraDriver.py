@@ -1,15 +1,16 @@
-import os
-from _thread import start_new_thread
-from multiprocessing import connection
-from datetime import datetime, timedelta
-
 from ModuleMessage import ModuleMessage
 
 from Camera_Module import Camera
 import cv2 as cv
 import numpy as np
+import os
+import shutil
+from _thread import start_new_thread
 
 baseline_frame = np.zeros((0,1))
+frames = list()
+recording = False
+video_count = 0
 
 _Minfo = {
     "version": 1,
@@ -29,9 +30,45 @@ def __proc_message__(conn):
         if isinstance(m, ModuleMessage):
             # Check if a message code exists for the given module
             ### HANDLE MESSAGES HERE ###
-            pass
+            if m.target == 'CM' and m.tag == 'Start Recording':
+                global recording
+                if not recording:
+                    recording = True
+                    print("Started Recording")
+                else:
+                    pass
+            if m.target == 'CM' and m.tag == 'Stop Recording':
+                if recording:
+                    tags = m.message
+                    stop_recording(conn, tags)
+                else:
+                    pass
         else:
             print("Error! received unknown object as a message!")
+
+
+def stop_recording(conn, tags: set):
+    global frames, recording
+    frame_copy = frames.copy()
+    frames.clear()
+    start_new_thread(make_video, (frame_copy, tags, conn,))
+    recording = False
+
+
+def make_video(frames: list, tags: set, conn):
+    print('Making Video')
+    global video_count
+    video_count += 1
+    path = os.path.join(os.getcwd(), 'Videos', 'video%d.mp4' % video_count)
+    video = cv.VideoWriter(path, cv.VideoWriter_fourcc('a','v','c','1'), 20, (800, 550))
+    for frame in frames:
+        video.write(frame)
+    video.release()
+
+    #Upload video to database
+    path = os.path.basename(path)
+    add_video_message = ModuleMessage("WPM", "New Video Path", (os.path.basename(path), tags))
+    conn.send(add_video_message)
 
 
 # This contains the actual operation of the module which will be run every time
@@ -39,6 +76,8 @@ def __operation__(cam: Camera.Camera, conn):
     ### ADD MODULE OPERATIONS HERE ###
     # Grab Frame from camera
     frame = cam.grab_frame()
+    if recording:
+        frames.append(frame)
 
     # Send frame to webportal live feed
     success, image = cv.imencode('.jpg', frame)
@@ -80,6 +119,14 @@ def __load__(conn):
 
     # Create a camera object
     cam = Camera.Camera()
+
+    # Clear directory of videos
+    path = os.path.join(os.getcwd(), 'Videos/')
+    if os.path.isdir(path):
+        shutil.rmtree(path)
+    # Make new directory for videos
+    os.mkdir(path)
+
 
     global baseline_frame
     baseline_frame = cam.grab_frame()
