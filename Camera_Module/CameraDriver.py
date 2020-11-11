@@ -1,19 +1,18 @@
-import os
-from _thread import start_new_thread
-from multiprocessing import connection
-from datetime import datetime, timedelta
-
 from ModuleMessage import ModuleMessage
 
 from Camera_Module import Camera
 import cv2 as cv
 import numpy as np
+import os
+import shutil
+from _thread import start_new_thread
 
+baseline_frame = np.zeros((0,1))
+frames = list()
 recording = False
 video_count = 0
-last_found = datetime.now()
-frames = list()
-faces = list()
+video_writer: cv.VideoWriter = None
+path = ''
 
 _Minfo = {
     "version": 1,
@@ -33,66 +32,74 @@ def __proc_message__(conn):
         if isinstance(m, ModuleMessage):
             # Check if a message code exists for the given module
             ### HANDLE MESSAGES HERE ###
-            print("User IO: ", m.message)
+            if m.target == 'CM' and m.tag == 'Start Recording':
+                if not recording:
+                    start_recording()
+                else:
+                    pass
+            if m.target == 'CM' and m.tag == 'Stop Recording':
+                if recording:
+                    tags = m.message
+                    stop_recording(conn, tags)
+                else:
+                    pass
         else:
             print("Error! received unknown object as a message!")
+
+
+def start_recording():
+    global recording, video_writer, video_count, path
+    recording = True
+    video_count += 1
+    path = os.path.join(os.getcwd(), 'Videos', 'video%d.mp4' % video_count)
+    video_writer = cv.VideoWriter(path, cv.VideoWriter_fourcc('a', 'v', 'c', '1'), 10, (800, 550))
+    print("Started Recording")
+
+
+def stop_recording(conn, tags: set):
+    print("Stopping Recording")
+    global recording
+    start_new_thread(upload_video, (conn, tags,))
+    recording = False
+
+
+def upload_video(conn, tags):
+    global video_writer, recording, path
+    video_writer.release()
+    add_video_message = ModuleMessage("WPM", "New Video Path", (os.path.basename(path), tags))
+    conn.send(add_video_message)
 
 
 # This contains the actual operation of the module which will be run every time
 def __operation__(cam: Camera.Camera, conn):
     ### ADD MODULE OPERATIONS HERE ###
-    # Grab Frame and check if face was found
-    global recording, frames, last_found
-    frame, found, face = cam.grab_frame()
+    # Grab Frame from camera
+    frame = cam.grab_frame()
+    if recording:
+        video_writer.write(frame)
 
+    # Send frame to webportal live feed
     success, image = cv.imencode('.jpg', frame)
     frame_message = ModuleMessage("WPM", "New Frame", image.tobytes())
     conn.send(frame_message)
 
-    if found:
-        # Add frame to video and document time face was last found
-        last_found = datetime.now()
-        frames.append(frame)
-        faces.append(face)
-        # Start Recording if we aren't already
-        if not recording:
-            recording = True
-            print('starting recording')
+    # Send frame to be classified if motion was detected
+    global baseline_frame
+    gray_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
+    gray_frame = cv.GaussianBlur(gray_frame, (25, 25), 0)
+
+    delta = cv.absdiff(baseline_frame, gray_frame)
+    threshold = cv.threshold(delta, 35, 255, cv.THRESH_BINARY)[1]
+
+    (contours, _) = cv.findContours(threshold, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    if len(contours) > 0:
+        # Motion detected, so send frames to be classified
+        frame_message = ModuleMessage("IPM", "New Frame", frame)
+        conn.send(frame_message)
+        baseline_frame = gray_frame
     else:
-        if recording:
-            # Add frame because we're recording
-            frames.append(frame)
-            current_time = datetime.now()
-            delta = current_time - last_found
-            # Face has not been present for too long, sto stop recording
-            if delta.seconds > 3:
-                frame_copy = frames.copy()
-                face_copy = faces.copy()
-                frames.clear()
-                faces.clear()
-                start_new_thread(make_video, (frame_copy, face_copy, conn, ))
-                recording = False
-
-
-def make_video(frames: list, faces: list, conn):
-    print('Making Video')
-    global video_count
-    video_count += 1
-    path = os.path.join(os.getcwd(), 'Videos', 'video%d.mp4' % video_count)
-    video = cv.VideoWriter(path, cv.VideoWriter_fourcc('a','v','c','1'), 10, (800, 550))
-    for frame in frames:
-        video.write(frame)
-    video.release()
-
-    #Upload video to database
-    path = os.path.basename(path)
-    tag = ('face',)
-    add_video_message = ModuleMessage("WPM", "New Video Path", (os.path.basename(path), tag))
-    conn.send(add_video_message)
-
-    #Send faces to classify
-    video_message = ModuleMessage('IPM', 'video', faces)
-    conn.send(video_message)
+        # No motion detected; do nothing
+        pass
 
 
 # Runs the modules functionality
@@ -109,15 +116,21 @@ def __load__(conn):
                                   _Minfo["name"] + " done loading!")
     conn.send(setup_message)
 
-    update_video_count()
-
-    #Make Directory for Videos
-    path = os.path.join(os.getcwd(), 'Videos/')
-    if not os.path.isdir(path):
-        os.mkdir(path)
-
     # Create a camera object
     cam = Camera.Camera()
+
+    # Clear directory of videos
+    path = os.path.join(os.getcwd(), 'Videos/')
+    if os.path.isdir(path):
+        shutil.rmtree(path)
+    # Make new directory for videos
+    os.mkdir(path)
+
+
+    global baseline_frame
+    baseline_frame = cam.grab_frame()
+    baseline_frame = cv.cvtColor(baseline_frame, cv.COLOR_BGR2GRAY)
+    baseline_frame = cv.GaussianBlur(baseline_frame, (25, 25), 0)
 
     running = True
     # While we are running do operations
@@ -127,9 +140,6 @@ def __load__(conn):
 
     cam.__del__()
 
-
-def update_video_count():
-    global video_count
 
 # Set the entry point function
 _Minfo["entry_point"] = __load__
