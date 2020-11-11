@@ -19,9 +19,9 @@ class Classifier:
     def __del__(self):
         pass
 
-    def classify(self, frame):
+    def classify(self, frame, face_locations):
         tags = set()
-        faces = face_recognition.face_encodings(frame)
+        faces = face_recognition.face_encodings(frame, known_face_locations=face_locations, num_jitters=1, model="small")
         for face in faces:
             #print("Found a face!")
             for known_face in self.faces:

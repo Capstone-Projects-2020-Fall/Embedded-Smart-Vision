@@ -17,6 +17,7 @@ _Minfo = {
 
 last_found = datetime.now()
 tags = set()
+face_detector = cv.CascadeClassifier('Camera_Module/face_data.xml')
 
 
 # Processes any messages left on the queue
@@ -38,9 +39,11 @@ def __proc_message__(conn):
             """
             if m.target == 'IPM' and m.tag == 'New Frame':
                 frame = m.message
-                names = classifier.classify(frame)
+                face_locations = detect_faces(frame)
                 global last_found, tags
-                if len(names) > 0:
+                if len(face_locations) > 0:
+                    names = classifier.classify(frame, face_locations)
+                    print(names)
                     # Record when last face was found
                     last_found = datetime.now()
                     # Tell camera to start recording if it isn't already
@@ -54,12 +57,22 @@ def __proc_message__(conn):
                     now = datetime.now()
                     delta = now - last_found
                     if delta.seconds > 2:
+                        if len(tags) == 0:
+                            tags.add('Unknown Person')
                         stop_record_message = ModuleMessage("CM", "Stop Recording", tags)
                         conn.send(stop_record_message)
                         tags.clear()
 
         else:
             print("Error! received unknown object as a message!")
+
+
+def detect_faces(image):
+    image_copy = image.copy()
+    grayscale = cv.cvtColor(image_copy, cv.COLOR_BGR2GRAY)
+    faces = face_detector.detectMultiScale(grayscale, scaleFactor=1.1, minNeighbors=5)
+    face_locations = [(y, x + w, y + h, x) for (x, y, w, h) in faces]
+    return face_locations
 
 
 # This contains the actual operation of the module which will be run every time

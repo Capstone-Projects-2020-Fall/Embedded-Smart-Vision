@@ -28,7 +28,6 @@ class Camera:
     def __init__(self):
         self.cam = cv.VideoCapture(0)
         self.frame_size = (800, 550)
-        self.cascade = cv.CascadeClassifier('Camera_Module/face_data.xml')
         self.recording = False
 
     def __del__(self):

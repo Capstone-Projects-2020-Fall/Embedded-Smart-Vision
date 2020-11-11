@@ -11,6 +11,8 @@ baseline_frame = np.zeros((0,1))
 frames = list()
 recording = False
 video_count = 0
+video_writer: cv.VideoWriter = None
+path = ''
 
 _Minfo = {
     "version": 1,
@@ -31,10 +33,8 @@ def __proc_message__(conn):
             # Check if a message code exists for the given module
             ### HANDLE MESSAGES HERE ###
             if m.target == 'CM' and m.tag == 'Start Recording':
-                global recording
                 if not recording:
-                    recording = True
-                    print("Started Recording")
+                    start_recording()
                 else:
                     pass
             if m.target == 'CM' and m.tag == 'Stop Recording':
@@ -47,26 +47,25 @@ def __proc_message__(conn):
             print("Error! received unknown object as a message!")
 
 
+def start_recording():
+    global recording, video_writer, video_count, path
+    recording = True
+    video_count += 1
+    path = os.path.join(os.getcwd(), 'Videos', 'video%d.mp4' % video_count)
+    video_writer = cv.VideoWriter(path, cv.VideoWriter_fourcc('a', 'v', 'c', '1'), 10, (800, 550))
+    print("Started Recording")
+
+
 def stop_recording(conn, tags: set):
-    global frames, recording
-    frame_copy = frames.copy()
-    frames.clear()
-    start_new_thread(make_video, (frame_copy, tags, conn,))
+    print("Stopping Recording")
+    global recording
+    start_new_thread(upload_video, (conn, tags,))
     recording = False
 
 
-def make_video(frames: list, tags: set, conn):
-    print('Making Video')
-    global video_count
-    video_count += 1
-    path = os.path.join(os.getcwd(), 'Videos', 'video%d.mp4' % video_count)
-    video = cv.VideoWriter(path, cv.VideoWriter_fourcc('a','v','c','1'), 20, (800, 550))
-    for frame in frames:
-        video.write(frame)
-    video.release()
-
-    #Upload video to database
-    path = os.path.basename(path)
+def upload_video(conn, tags):
+    global video_writer, recording, path
+    video_writer.release()
     add_video_message = ModuleMessage("WPM", "New Video Path", (os.path.basename(path), tags))
     conn.send(add_video_message)
 
@@ -77,7 +76,7 @@ def __operation__(cam: Camera.Camera, conn):
     # Grab Frame from camera
     frame = cam.grab_frame()
     if recording:
-        frames.append(frame)
+        video_writer.write(frame)
 
     # Send frame to webportal live feed
     success, image = cv.imencode('.jpg', frame)
