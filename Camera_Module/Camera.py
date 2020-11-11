@@ -41,5 +41,5 @@ class Camera:
         frame = cv.resize(frame, self.frame_size, interpolation=cv.INTER_NEAREST)
         norm = np.zeros(self.frame_size)
         norm = cv.normalize(frame, norm, 0, 255, cv.NORM_MINMAX)
-        found = detect_face(self.cascade, norm)
-        return norm, found
+        #found = detect_face(self.cascade, norm)
+        return norm
