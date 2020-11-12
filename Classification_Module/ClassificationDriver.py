@@ -38,12 +38,16 @@ def __proc_message__(conn):
                 print('done classifying!')
             """
             if m.target == 'IPM' and m.tag == 'New Frame':
+                desired_face_found = False
                 frame = m.message
                 face_locations = detect_faces(frame)
                 global last_found, tags
                 if len(face_locations) > 0:
                     names = classifier.classify(frame, face_locations)
+<<<<<<< Updated upstream
                     print(names)
+=======
+>>>>>>> Stashed changes
                     # Record when last face was found
                     last_found = datetime.now()
                     # Tell camera to start recording if it isn't already
@@ -52,6 +56,10 @@ def __proc_message__(conn):
                     # Add classified names to our list
                     for name in names:
                         tags.add(name)
+                        led_on_message = ModuleMessage("ACT", "Face Found", None)
+                        conn.send(led_on_message)
+                        print(name)
+                        desired_face_found = True
                 else:
                     # No face found for too long, so stop recording if we are recording
                     now = datetime.now()
@@ -62,7 +70,9 @@ def __proc_message__(conn):
                         stop_record_message = ModuleMessage("CM", "Stop Recording", tags)
                         conn.send(stop_record_message)
                         tags.clear()
-
+                if desired_face_found is False:
+                    led_off_message = ModuleMessage("ACT", "Face Not Found", None)
+                    conn.send(led_off_message)
         else:
             print("Error! received unknown object as a message!")
 
