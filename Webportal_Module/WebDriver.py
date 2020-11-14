@@ -43,10 +43,10 @@ def __proc_message__(conn):
 # This contains the actual operation of the module which will be run every time
 def __operation__(conn):
     ### ADD MODULE OPERATIONS HERE ###
-    app = create_app()
+    socketio, app = create_app()
     message_thread = threading.Thread(target=check_messages, args=(app, conn,), daemon=True)
     message_thread.start()
-    app.run()
+    socketio.run(app)
 
 
 def check_messages(app, conn):

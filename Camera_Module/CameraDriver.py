@@ -80,7 +80,7 @@ def __operation__(cam: Camera.Camera, conn):
 
     # Send frame to webportal live feed
     success, image = cv.imencode('.jpg', frame)
-    frame_message = ModuleMessage("WPM", "New Frame", image.tobytes())
+    frame_message = ModuleMessage("WPM", "New Frame", frame)
     conn.send(frame_message)
 
     # Send frame to be classified if motion was detected

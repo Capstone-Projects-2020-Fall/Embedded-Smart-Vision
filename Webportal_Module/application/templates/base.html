@@ -2,6 +2,7 @@
 <html>
   <title>{% block title %}{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='navigation.css') }}">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
   {% block style %}{% endblock %}
 <section class="content">
   <section id="navigation" class="navigation">
@@ -21,7 +22,40 @@
       {% block content %}{% endblock %}
   </section>
 </section>
-<script>
+<script type="text/javascript" charset="utf-8">
+    var socket = io();
+    socket.on('connect', function() {
+        socket.emit('my event', {data: 'I\'m connected!'});
+    });
+    socket.on('image',function (){
+        console.log("Received image")
+    })
+
+    socket.on('my response', function(){
+        document.getElementById('home').innerText = "HAHA-home"
+    });
+
+    setInterval(()=>{
+        socket.emit('new_frame', {data: 'new frame'});
+    }, 1000/30);
+
+    socket.on('image', (image)=>{
+        console.log(image)
+        //const img = document.getElementById('dashboard-stream');
+        //img.src = `data:image/jpeg;base64,${image}`;
+
+        var bytes = new Uint8Array(image);
+        var blob = new Blob([bytes.buffer]);
+
+        var img = document.getElementById('dashboard-stream');
+
+        var reader = new FileReader();
+        reader.onload = function(e) {
+                img.src = e.target.result;
+            };
+        reader.readAsDataURL(blob);
+    });
 
 </script>
+
 </html>
