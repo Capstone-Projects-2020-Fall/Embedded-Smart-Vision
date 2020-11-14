@@ -12,6 +12,35 @@ if __name__ == '__main__':
     # Our global variables, these are used to access state based information
     cfg: Config = Config()
     cfg.load_config()
+    # Holds state information about our programming allowing us to get better communication of key states
+    stateDict = {
+        "connected": False,
+        "stream_connected": False,
+        "test": "This is test string"
+    }
+
+
+def get_state_value(key, reply=None):
+    if key in stateDict:
+        if reply is None:
+            print("Error: attempting to get a variable without a reply pipe")
+        else:
+            reply.send(stateDict[key])
+            reply.close()
+    else:
+        print("Requested state key was not found")
+        if reply is None:
+            print("Error: attempting to get a variable without a reply pipe")
+        else:
+            reply.send(None)
+            reply.close()
+
+
+def set_state_value(key, value):
+    if key in stateDict:
+        stateDict[key] = value
+    else:
+        print("set_state_value couldn't find key", key)
 
 
 # Prints out the status of the running processes on an interval
@@ -73,6 +102,12 @@ def message_handler(conns):
                             cfg.var_transaction(prm)
                         else:
                             print("Error in program host: attempted to update the config but passed bad data")
+                    elif m.tag == 'get_state_data':
+                        key, reply = m.message
+                        get_state_value(key, reply)
+                    elif m.tag == 'set_state_data':
+                        key, value = m.message
+                        set_state_value(key, value)
                 # Check if a message code exists for the given module
                 if m.target in conns:
                     conns[m.target].pipe.send(m)

@@ -41,11 +41,11 @@ class Config:
                     json.dump(self.vars, outFile)
         else:
             if data.key in self.vars:
-                print("config - sending data for ", data.key)
                 if data.reply == -1:
                     print("Error: attempting to get a variable without a reply pipe")
                 else:
                     data.reply.send(self.vars[data.key])
+                    data.reply.close()
             else:
                 raise Exception("The key that was requested from the config was not found in the config")
 
