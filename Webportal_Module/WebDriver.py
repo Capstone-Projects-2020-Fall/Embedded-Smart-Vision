@@ -47,7 +47,6 @@ def __operation__(conn):
     message_thread = threading.Thread(target=check_messages, args=(app, conn,), daemon=True)
     message_thread.start()
     app.run(host='0.0.0.0')
-    pass
 
 
 def check_messages(app, conn):
@@ -74,17 +73,7 @@ def check_messages(app, conn):
 
 # Runs the modules functionality
 def __load__(conn):
-    # Let the world know we are loading a new object
-    setup_message = ModuleMessage("HIO",
-                                  "loading",
-                                  "Loading " + _Minfo["name"] + "...")
-    conn.send(setup_message)
 
-    # Let the world know we are loading a new object
-    setup_message = ModuleMessage("HIO",
-                                  "ready",
-                                  _Minfo["name"] + " done loading!")
-    conn.send(setup_message)
     # While we are running do operations
     __operation__(conn)
 

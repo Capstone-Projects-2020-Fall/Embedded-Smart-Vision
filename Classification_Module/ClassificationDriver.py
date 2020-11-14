@@ -96,7 +96,7 @@ def __load__(conn):
     running = True
     # While we are running do operations
     while running:
-        #__operation__()
+        # __operation__()
         __proc_message__(conn)
 
 
