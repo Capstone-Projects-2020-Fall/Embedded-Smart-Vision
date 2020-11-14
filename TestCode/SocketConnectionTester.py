@@ -47,9 +47,13 @@ def test_send_frame_message_to_scm():
 def test_video_sending():
     conn = start_socket_connection_module()
 
+    video_path = 'test_video.mp4'
+    video_tags = ['test', 'video', 'short', 'daniel']
     time.sleep(2)
-    scmi.send_video_file(conn, 'testvideo.mp4')
+    scmi.send_video_file(conn, video_path, video_tags)
 
+    time.sleep(2)
+    scmi.shut_down_module(conn)
     while True:
         pass
 

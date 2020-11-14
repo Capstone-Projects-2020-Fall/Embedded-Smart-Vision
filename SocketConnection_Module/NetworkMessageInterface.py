@@ -13,9 +13,9 @@ class NetworkMessageInterface:
         self.queue_call_back(nsm)
 
     # Send a video over the socket to the central server
-    def send_video(self, link):
+    def send_video(self, path, tags):
         print("Sending video")
-        nsm = NetworkSendMessage(message_type=NSM_TYPE.SEND_VIDEO, var1=link)
+        nsm = NetworkSendMessage(message_type=NSM_TYPE.SEND_VIDEO, var1=path, var2=tags)
         self.queue_call_back(nsm)
         pass
 
@@ -24,4 +24,6 @@ class NetworkMessageInterface:
         if sub_tag == 'send_test_message':
             self.send_test_message(data)
         elif sub_tag == 'send_video':
-            self.send_video(data)
+            # Unpack the tuple and pass it on
+            path, tags = data
+            self.send_video(path, tags)

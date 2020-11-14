@@ -59,10 +59,15 @@ class SocketClientModule:
                             self.streaming_connection_thread.update_frame(m.message)
                     else:
                         print("Streaming server is not connected!")
+                        
                 elif m.target == self.message_code and m.tag == 'network_message':
                     print("Handling network message")
                     ## We will handle this as a network message
                     self.NMI.handle_network_message(m.optional_tag, m.message)
+
+                elif m.target == self.message_code and m.tag == 'shut_down':
+                    print("Socket Client Module is shutting down")
+                    self.running = False
             else:
                 print("Error! received unknown object as a message!")
 
@@ -83,6 +88,12 @@ class SocketClientModule:
         while running:
             self.__operation__()
             self.__proc_message__()
+
+        self.__shut_down__()
+
+    def __shut_down__(self):
+        self.running = False
+        quit()
 
     # This function will start up the stream connection
     def start_stream(self):
