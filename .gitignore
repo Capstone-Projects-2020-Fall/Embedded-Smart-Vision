@@ -21,3 +21,5 @@ Webportal_Module/application/db.sqlite
 
 venv/
 
+.idea/encodings.xml
+.idea/encodings.xml

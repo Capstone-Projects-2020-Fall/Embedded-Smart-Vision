@@ -3,7 +3,6 @@ import struct
 import threading
 from queue import Queue
 from socket import socket
-from .MessagePack import MessagePack, MsgType, get_bytes, Header, build_from_bytes
 from .QueueMessage import QueueMessage
 
 

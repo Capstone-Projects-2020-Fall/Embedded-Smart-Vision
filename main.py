@@ -19,7 +19,7 @@ def process_monitor(pool):
     while False:
         sleep(60)
         for p in pool:
-            print(p , ": " , pool[p].get('proc').is_alive())
+            print(p, ":", pool[p].get('proc').is_alive())
 
 
 def run_module(module_info):
@@ -49,7 +49,6 @@ def break_down():
 
 # Handles the inner-process communication calls
 def message_handler(conns):
-
     for c in conns:
         # Check that we have data before attempting to recv data
         if conns[c].pipe.poll():
@@ -77,15 +76,13 @@ def message_handler(conns):
                 # Check if a message code exists for the given module
                 if m.target in conns:
                     conns[m.target].pipe.send(m)
-                    #print(conns[m.target])
+                    # print(conns[m.target])
             else:
                 print("Error! received unknown object as a message!")
 
 
 # This function is the starting point for the program host
 def start():
-
-
     # the list of modules we want to install
     module_list = ModuleList.module_list
     # will hold the process information

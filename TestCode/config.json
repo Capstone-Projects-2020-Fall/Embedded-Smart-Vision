@@ -1,4 +1,6 @@
 {
   "node_name": "new node",
-  "remote_host_token": "NULL"
+  "remote_host_token": "NULL",
+  "central_server_IP": "DESKTOP-8OKIGEM",
+  "central_server_port": "1234"
 }
