@@ -1,10 +1,33 @@
 {% extends 'base.html' %}
 
 {% block header %}
-  <h1>{% block title %}Live Video Feed{% endblock %}</h1>
+    <h1>{% block title %}Live Video Feed{% endblock %}</h1>
 {% endblock %}
 
 {% block content %}
-  <img id="dashboard-stream" src ="">
+    <img id="dashboard-stream" src="">
 
+    <script>
+        var socket = io();
+        setInterval(() => {
+            socket.emit('new_frame', {data: 'new frame'});
+        }, 1000 / 30);
+
+        socket.on('image', (image) => {
+            console.log(image)
+            //const img = document.getElementById('dashboard-stream');
+            //img.src = `data:image/jpeg;base64,${image}`;
+
+            var bytes = new Uint8Array(image);
+            var blob = new Blob([bytes.buffer]);
+
+            var img = document.getElementById('dashboard-stream');
+
+            var reader = new FileReader();
+            reader.onload = function (e) {
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(blob);
+        });
+    </script>
 {% endblock %}

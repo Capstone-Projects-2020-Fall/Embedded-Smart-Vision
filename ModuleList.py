@@ -8,7 +8,7 @@ from SocketConnection_Module import SocketClient_Module
 module_list = [
     CameraDriver.__module_info__(),
     # ClassificationDriver.__module_info__(),
-    WebDriver.__module_info__(),
-    ActionDriver.__module_info__(),
+    # WebDriver.__module_info__(),
+    # ActionDriver.__module_info__(),
     SocketClient_Module.__module_info__()
 ]

@@ -52,8 +52,6 @@ def test_video_sending():
     time.sleep(2)
     scmi.send_video_file(conn, video_path, video_tags)
 
-    time.sleep(2)
-    scmi.shut_down_module(conn)
     while True:
         pass
 

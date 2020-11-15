@@ -34,6 +34,7 @@ class StreamingConnectionThread(threading.Thread):
             # Block until we can get something from the queue
             # TODO time out the get request and show a default image if the queue has timed out
             frame = self.latest_frames.get()
+            print("Sending frame")
             # Check if the streaming server is connected
             if self.ctx.streaming_server_is_connected:
                 # Pickle our data to get a byte array
@@ -75,4 +76,5 @@ class StreamingConnectionThread(threading.Thread):
 
     # Update the latest frame being sent to the streaming server
     def update_frame(self, frame):
+        print("Updating Frames")
         self.latest_frames.put(frame)

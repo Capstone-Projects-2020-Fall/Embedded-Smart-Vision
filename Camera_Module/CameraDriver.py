@@ -83,6 +83,9 @@ def __operation__(cam: Camera.Camera, conn):
     frame_message = ModuleMessage("WPM", "New Frame", frame)
     conn.send(frame_message)
 
+    frame_message = ModuleMessage("SCM", "update_stream_frame", frame)
+    conn.send(frame_message)
+
     # Send frame to be classified if motion was detected
     global baseline_frame
     gray_frame = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)

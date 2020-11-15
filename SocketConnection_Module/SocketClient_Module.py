@@ -62,6 +62,7 @@ class SocketClientModule:
                             # if everything is all good we can attempt to update the frame
                             self.streaming_connection_thread.update_frame(m.message)
                     else:
+                        pass
                         print("Streaming server is not connected!")
 
                 elif m.target == self.message_code and m.tag == 'network_message':

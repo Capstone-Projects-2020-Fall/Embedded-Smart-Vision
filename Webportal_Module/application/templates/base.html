@@ -27,34 +27,13 @@
     socket.on('connect', function() {
         socket.emit('my event', {data: 'I\'m connected!'});
     });
-    socket.on('image',function (){
-        console.log("Received image")
-    })
+
 
     socket.on('my response', function(){
         document.getElementById('home').innerText = "HAHA-home"
     });
 
-    setInterval(()=>{
-        socket.emit('new_frame', {data: 'new frame'});
-    }, 1000/30);
 
-    socket.on('image', (image)=>{
-        console.log(image)
-        //const img = document.getElementById('dashboard-stream');
-        //img.src = `data:image/jpeg;base64,${image}`;
-
-        var bytes = new Uint8Array(image);
-        var blob = new Blob([bytes.buffer]);
-
-        var img = document.getElementById('dashboard-stream');
-
-        var reader = new FileReader();
-        reader.onload = function(e) {
-                img.src = e.target.result;
-            };
-        reader.readAsDataURL(blob);
-    });
 
 </script>
 
