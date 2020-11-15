@@ -1,14 +1,8 @@
 import os
 from datetime import datetime
-from sys import platform
 
 from ModuleMessage import ModuleMessage
-if platform == "linux" or platform == "linux2":
-    import RPi.GPIO as GPIO
-elif platform == "win32":
-    # If we have any windows specific code put it here
-    pass
-
+#import RPi.GPIO as GPIO
 from time import sleep
 
 on = False
@@ -34,13 +28,11 @@ def __proc_message__(conn):
             global on
             if m.target == 'ACT' and m.tag == 'Face Found':
                 if on is False:
-                    if platform == "linux" or platform == "linux2":
-                        GPIO.output(18, True)
+                    GPIO.output(18, True)
                     on = True
             if m.target == 'ACT' and m.tag == 'Face Not Found':
                 if on is True:
-                    if platform == "linux" or platform == "linux2":
-                        GPIO.output(18, False)
+                    GPIO.output(18, False)
                     on = False
         else:
             print("Error! received unknown object as a message!")
@@ -54,9 +46,8 @@ def __operation__():
 
 # Runs the modules functionality
 def __load__(conn):
-    if platform == "linux" or platform == "linux2":
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(18, GPIO.OUT)
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(18, GPIO.OUT)
     running = True
     # While we are running do operations
     while running:
