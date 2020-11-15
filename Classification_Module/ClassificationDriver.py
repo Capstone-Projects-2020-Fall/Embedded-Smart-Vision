@@ -44,10 +44,6 @@ def __proc_message__(conn):
                 global last_found, tags
                 if len(face_locations) > 0:
                     names = classifier.classify(frame, face_locations)
-<<<<<<< Updated upstream
-                    print(names)
-=======
->>>>>>> Stashed changes
                     # Record when last face was found
                     last_found = datetime.now()
                     # Tell camera to start recording if it isn't already
@@ -58,7 +54,7 @@ def __proc_message__(conn):
                         tags.add(name)
                         led_on_message = ModuleMessage("ACT", "Face Found", None)
                         conn.send(led_on_message)
-                        print(name)
+                        #print(name)
                         desired_face_found = True
                 else:
                     # No face found for too long, so stop recording if we are recording

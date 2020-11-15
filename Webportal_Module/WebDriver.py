@@ -32,7 +32,8 @@ def __proc_message__(conn):
                 path = m.message[0]
                 tags = m.message[1]
                 videoID = DBInterface.add_video(path, tags)
-                videoIDs.put(videoID)
+                if videoID is not None:
+                    videoIDs.put(videoID)
             if m.target == "WPM" and m.tag == "New Video Tags":
                 tags = m.message
                 DBInterface.add_tags(videoIDs.get(), tags)

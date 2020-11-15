@@ -4,7 +4,7 @@ from base64 import b64encode
 
 from flask import Blueprint, render_template, request
 from ...models import Video, Tag
-from ... import video_directory
+from ... import db, video_directory
 import cv2 as cv
 from PIL import Image
 import io
@@ -19,9 +19,8 @@ def show_all_videos():
     videos = Video.query.all()
     tagged_videos = list()
     for video in videos:
-        video_path = video.path
         tags = Tag.query.filter_by(videoID=video.id).all()
-        video_with_tag = VideoWithTag(video_path, tags)
+        video_with_tag = VideoWithTag(video.path, tags)
         tagged_videos.append(video_with_tag)
     return render_template('gallery.html', taggedVideos=tagged_videos, current_page='videos')
 
@@ -40,6 +39,15 @@ def show_tagged_videos():
     return render_template('gallery.html', taggedVideos=tagged_videos, current_page='videos')
 
 
+def delete_video(video):
+    videoid = video.id
+    db.session.delete(video)
+    tags = Tag.query.filter_by(videoID=videoid).all()
+    for tag in tags:
+        db.session.delete(tag)
+    db.session.commit()
+
+
 @video_gallery.route('/watchVideo/<videoname>')
 def watch_video(videoname):
     video = Video.query.filter_by(path=videoname).first()
@@ -55,6 +63,9 @@ class VideoWithTag:
 
     def __init__(self, path, tags):
         self.path = path
+        video = cv.VideoCapture(video_directory + path)
+        if not video.isOpened():
+            print('Error opening video: ', video_directory + path)
 
         self.tags = ''
         for tag in tags:
@@ -62,11 +73,6 @@ class VideoWithTag:
         self.tags = self.tags[0:len(self.tags) - 2]
 
         size = 100, 100
-        video = cv.VideoCapture(video_directory + path)
-        if not video.isOpened():
-            print('Error opening video: ', video_directory + path)
-        if not os.path.isfile(video_directory + path):
-            print('Path is not a file')
         video_length = int(video.get(cv.CAP_PROP_FRAME_COUNT)) - 1
         if video.isOpened() and video_length > 0:
             success, thumbnail = video.read()

@@ -2,6 +2,7 @@ import os
 
 import cv2 as cv
 import numpy as np
+from time import sleep
 
 
 def save_image(img, path):
@@ -37,6 +38,11 @@ class Camera:
     # Grabs frame from passed VideoCapture object (usb camera)
     def grab_frame(self):
         ret, frame = self.cam.read()
+        while ret is False:
+            print("No camera detected")
+            sleep(5)
+            self.cam = cv.VideoCapture(0)
+            ret, frame = self.cam.read()
         frame = cv.resize(frame, self.frame_size, interpolation=cv.INTER_NEAREST)
         norm = np.zeros(self.frame_size)
         norm = cv.normalize(frame, norm, 0, 255, cv.NORM_MINMAX)
