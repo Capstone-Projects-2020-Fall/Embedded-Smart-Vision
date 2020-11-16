@@ -14,6 +14,7 @@ video_directory = video_directory + '/'
 video_stream = VideoStream()
 
 app = Flask(__name__)
+
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 socketio = SocketIO(app)
 db.init_app(app)
@@ -26,6 +27,10 @@ app.register_blueprint(home_page)
 app.register_blueprint(dashboard)
 app.register_blueprint(video_gallery)
 
+# from Webportal_Module.application.VideoStream.VideoEmitter import VideoEmitter
+
+# video_emitter = VideoEmitter(video_stream ,socketio)
+# video_emitter.start()
 
 @socketio.on('my event')
 def test_message(message):
