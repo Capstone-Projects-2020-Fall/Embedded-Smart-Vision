@@ -36,16 +36,16 @@ class StreamingConnectionThread(threading.Thread):
             # Block until we can get something from the queue
             # TODO time out the get request and show a default image if the queue has timed out
             frame = self.latest_frames.get()
-            print(type(frame))
+            # print(type(frame))
             # Check if the streaming server is connected
             if self.ctx.streaming_server_is_connected:
                 # Pickle our data to get a byte array
-                #data = frame # cv2.imencode('.jpg', frame)[1].tobytes()
+                data = cv2.imencode('.jpg', frame)[1].tobytes()
                 # print(type(frame))
                 # Pack up and send the length of our frame follow by the frame data
-                msg_len = struct.pack('I', len(frame))
+                msg_len = struct.pack('I', len(data))
 
-                self.conn.sendall(msg_len + frame)
+                self.conn.sendall(msg_len + data)
 
     # Connect to the central server
     def connect_central(self):
