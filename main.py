@@ -12,6 +12,35 @@ if __name__ == '__main__':
     # Our global variables, these are used to access state based information
     cfg: Config = Config()
     cfg.load_config()
+    # Holds state information about our programming allowing us to get better communication of key states
+    stateDict = {
+        "connected": False,
+        "stream_connected": False,
+        "test": "This is test string"
+    }
+
+
+def get_state_value(key, reply=None):
+    if key in stateDict:
+        if reply is None:
+            print("Error: attempting to get a variable without a reply pipe")
+        else:
+            reply.send(stateDict[key])
+            reply.close()
+    else:
+        print("Requested state key was not found")
+        if reply is None:
+            print("Error: attempting to get a variable without a reply pipe")
+        else:
+            reply.send(None)
+            reply.close()
+
+
+def set_state_value(key, value):
+    if key in stateDict:
+        stateDict[key] = value
+    else:
+        print("set_state_value couldn't find key", key)
 
 
 # Prints out the status of the running processes on an interval
@@ -19,7 +48,7 @@ def process_monitor(pool):
     while False:
         sleep(60)
         for p in pool:
-            print(p , ": " , pool[p].get('proc').is_alive())
+            print(p, ":", pool[p].get('proc').is_alive())
 
 
 def run_module(module_info):
@@ -49,7 +78,6 @@ def break_down():
 
 # Handles the inner-process communication calls
 def message_handler(conns):
-
     for c in conns:
         # Check that we have data before attempting to recv data
         if conns[c].pipe.poll():
@@ -74,18 +102,22 @@ def message_handler(conns):
                             cfg.var_transaction(prm)
                         else:
                             print("Error in program host: attempted to update the config but passed bad data")
+                    elif m.tag == 'get_state_data':
+                        key, reply = m.message
+                        get_state_value(key, reply)
+                    elif m.tag == 'set_state_data':
+                        key, value = m.message
+                        set_state_value(key, value)
                 # Check if a message code exists for the given module
                 if m.target in conns:
                     conns[m.target].pipe.send(m)
-                    #print(conns[m.target])
+                    # print(conns[m.target])
             else:
                 print("Error! received unknown object as a message!")
 
 
 # This function is the starting point for the program host
 def start():
-
-
     # the list of modules we want to install
     module_list = ModuleList.module_list
     # will hold the process information
