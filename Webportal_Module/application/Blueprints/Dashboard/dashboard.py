@@ -14,14 +14,14 @@ def show_live_video():
     return render_template('dashboard.html', current_page='dashboard')
 
 
-@socketio.on('new_frame')
-def new_frame(image):
-    print("Requested new frame")
-    frame = video_stream.get_current_frame()
-    _, enc = cv2.imencode('.jpg', frame)
-    im_bytes = enc.tobytes()
-    # im_b64 = base64.b64encode(im_bytes)
-    emit('image', im_bytes)
+# @socketio.on('new_frame')
+# def new_frame():
+#     # print("Requested new frame")
+#     frame = video_stream.get_current_frame()
+#     _, enc = cv2.imencode('.jpg', frame)
+#     im_bytes = enc.tobytes()
+#     # im_b64 = base64.b64encode(im_bytes)
+#     emit('image', im_bytes)
 
 
 

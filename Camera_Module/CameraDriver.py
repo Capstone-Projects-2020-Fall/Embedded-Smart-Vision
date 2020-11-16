@@ -85,7 +85,7 @@ def __operation__(cam: Camera.Camera, conn):
 
     # Send frame to webportal live feed
     success, image = cv.imencode('.jpg', frame)
-    frame_message = ModuleMessage("WPM", "New Frame", frame)
+    frame_message = ModuleMessage("WPM", "New Frame", image.tobytes())
     conn.send(frame_message)
 
     frame_message = ModuleMessage("SCM", "update_stream_frame", frame)

@@ -4,6 +4,7 @@ from queue import Queue
 
 from ModuleMessage import ModuleMessage
 from Webportal_Module.application import create_app, DBInterface, video_stream
+from Webportal_Module.application import socketio
 
 _Minfo = {
     "version": 1,
@@ -28,6 +29,7 @@ def __proc_message__(conn):
             ### HANDLE MESSAGES HERE ###
             if m.target == "WPM" and m.tag == 'New Frame':
                 video_stream.update_frame(m.message)
+                socketio.emit('frame', m.message)
             if m.target == "WPM" and m.tag == "New Video Path":
                 path = m.message[0]
                 tags = m.message[1]
@@ -47,7 +49,8 @@ def __operation__(conn):
     socketio, app = create_app()
     message_thread = threading.Thread(target=check_messages, args=(app, conn,), daemon=True)
     message_thread.start()
-    socketio.run(app)
+    socketio.run(app, host='0.0.0.0')
+    
 
 
 def check_messages(app, conn):
