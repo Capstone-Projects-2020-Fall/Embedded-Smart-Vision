@@ -11,7 +11,7 @@ import numpy as np
 
 class StreamingConnectionThread(threading.Thread):
 
-    def __init__(self, context):
+    def __init__(self, context, central_ip, central_port):
         threading.Thread.__init__(self)
         self.name = 'Streaming Connection Thread'
         # Holds the latest frame
@@ -21,6 +21,8 @@ class StreamingConnectionThread(threading.Thread):
         self.ctx = context
         # The connection to the central server
         self.conn = None
+        self.central_ip = central_ip
+        self.central_port = central_port
 
     def run(self):
         print("Starting" + self.name + " as a streaming thread")
@@ -34,22 +36,22 @@ class StreamingConnectionThread(threading.Thread):
             # Block until we can get something from the queue
             # TODO time out the get request and show a default image if the queue has timed out
             frame = self.latest_frames.get()
-            print("Sending frame")
+            print(type(frame))
             # Check if the streaming server is connected
             if self.ctx.streaming_server_is_connected:
                 # Pickle our data to get a byte array
-                data = pickle.dumps(frame) # cv2.imencode('.jpg', frame)[1].tobytes()
-
+                #data = frame # cv2.imencode('.jpg', frame)[1].tobytes()
+                # print(type(frame))
                 # Pack up and send the length of our frame follow by the frame data
-                msg_len = struct.pack('I', len(data))
+                msg_len = struct.pack('I', len(frame))
 
-                self.conn.sendall(msg_len + data)
+                self.conn.sendall(msg_len + frame)
 
     # Connect to the central server
     def connect_central(self):
         # Create the socket and attempt to connect to the central server
         self.conn = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.conn.connect((socket.gethostname(), 1234))
+        self.conn.connect((self.central_ip, self.central_port))
 
         print("Streaming server established connection with central")
 
@@ -76,5 +78,4 @@ class StreamingConnectionThread(threading.Thread):
 
     # Update the latest frame being sent to the streaming server
     def update_frame(self, frame):
-        print("Updating Frames")
         self.latest_frames.put(frame)

@@ -27,6 +27,10 @@ app.register_blueprint(home_page)
 app.register_blueprint(dashboard)
 app.register_blueprint(video_gallery)
 
+import logging
+
+log = logging.getLogger('werkzeug')
+log.setLevel(logging.ERROR)
 # from Webportal_Module.application.VideoStream.VideoEmitter import VideoEmitter
 
 # video_emitter = VideoEmitter(video_stream ,socketio)

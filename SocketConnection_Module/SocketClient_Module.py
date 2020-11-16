@@ -9,7 +9,7 @@ import time
 import ProgramHostInterface as phi
 from SocketConnection_Module.StreamingConnectionThread import StreamingConnectionThread
 from SocketConnection_Module.NetworkMessageInterface import NetworkMessageInterface
-
+import ProgramHostInterface as phi
 
 class SocketClientModule:
     def __init__(self, prgh_conn):
@@ -25,6 +25,9 @@ class SocketClientModule:
 
         # The text name of this node
         self.node_name = phi.get_config_value(self.prgh_conn, "node_name")
+        self.ip = phi.get_config_value(self.prgh_conn, "central_server_IP")
+        self.port = int(phi.get_config_value(self.prgh_conn, "central_server_port"))
+
         # Tells us if the central server connection is established or not
         self.is_connected = False
         self.streaming_connected = False
@@ -111,9 +114,13 @@ class SocketClientModule:
         # Internal method to encapsulate repeated code
         def _start_stream():
             print("Starting new stream")
-            self.streaming_connection_thread = StreamingConnectionThread(self)
+
+   
+            self.streaming_connection_thread = StreamingConnectionThread(self, self.ip, self.port)
             self.streaming_connection_thread.start()
             self.streaming_connected = True
+        
+             
 
         if self.is_connected:
             _start_stream()

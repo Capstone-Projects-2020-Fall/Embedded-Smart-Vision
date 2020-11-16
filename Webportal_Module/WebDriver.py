@@ -28,7 +28,7 @@ def __proc_message__(conn):
             # Check if a message code exists for the given module
             ### HANDLE MESSAGES HERE ###
             if m.target == "WPM" and m.tag == 'New Frame':
-                video_stream.update_frame(m.message)
+                # video_stream.update_frame(m.message)
                 socketio.emit('frame', m.message)
             if m.target == "WPM" and m.tag == "New Video Path":
                 path = m.message[0]
