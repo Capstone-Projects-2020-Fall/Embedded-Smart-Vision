@@ -14,7 +14,7 @@ def add_video(path, tags):
         db.session.add(new_tag)
     db.session.commit()
     #print("Added Video to database")
-    return video.id
+    return video.id, os.path.join(video_directory, video_name)
 
 
 def add_tags(videoid, tags):

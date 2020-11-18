@@ -5,6 +5,7 @@ from queue import Queue
 from ModuleMessage import ModuleMessage
 from Webportal_Module.application import create_app, DBInterface, video_stream
 from Webportal_Module.application import socketio
+from SocketConnection_Module.Socket_Connection_Module_interface import send_video_file
 
 _Minfo = {
     "version": 1,
@@ -33,9 +34,10 @@ def __proc_message__(conn):
             if m.target == "WPM" and m.tag == "New Video Path":
                 path = m.message[0]
                 tags = m.message[1]
-                videoID = DBInterface.add_video(path, tags)
+                videoID, video_path = DBInterface.add_video(path, tags)
                 if videoID is not None:
                     videoIDs.put(videoID)
+                send_video_file(conn, video_path, tags)
             if m.target == "WPM" and m.tag == "New Video Tags":
                 tags = m.message
                 DBInterface.add_tags(videoIDs.get(), tags)

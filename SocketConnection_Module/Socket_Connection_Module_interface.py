@@ -1,5 +1,5 @@
 # This is an interface for creating messages to be send to the socket connection module
-from multiprocessing.connection import PipeConnection, Connection
+from multiprocessing.connection import Connection
 
 from ModuleMessage import ModuleMessage
 import cv2
