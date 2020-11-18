@@ -28,11 +28,6 @@
         socket.emit('my event', {data: 'I\'m connected!'});
     });
 
-
-    socket.on('my response', function(){
-        document.getElementById('home').innerText = "HAHA-home"
-    });
-
     socket.on('test', ()=>{
             console.log("data");
     });

@@ -29,7 +29,6 @@ def __proc_message__(conn):
             ### HANDLE MESSAGES HERE ###
             if m.target == "WPM" and m.tag == 'New Frame':
                 # video_stream.update_frame(m.message)
-                print(type(m.message))
                 socketio.emit('frame', m.message)
             if m.target == "WPM" and m.tag == "New Video Path":
                 path = m.message[0]

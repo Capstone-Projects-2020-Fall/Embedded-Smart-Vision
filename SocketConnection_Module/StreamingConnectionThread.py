@@ -4,7 +4,7 @@ import socket
 import struct
 import threading
 from queue import Queue
-
+import time
 import cv2
 import numpy as np
 
@@ -41,11 +41,12 @@ class StreamingConnectionThread(threading.Thread):
             if self.ctx.streaming_server_is_connected:
                 # Pickle our data to get a byte array
                 data = cv2.imencode('.jpg', frame)[1].tobytes()
-                # print(type(frame))
+                
                 # Pack up and send the length of our frame follow by the frame data
-                msg_len = struct.pack('I', len(data))
-
-                self.conn.sendall(msg_len + data)
+                msg_len = struct.pack('i', len(data))
+                self.conn.sendall(msg_len)
+                self.conn.sendall(data)
+                time.sleep(1/24)
 
     # Connect to the central server
     def connect_central(self):
