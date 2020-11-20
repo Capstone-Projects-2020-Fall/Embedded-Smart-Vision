@@ -2,6 +2,7 @@
 <html>
   <title>{% block title %}{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='navigation.css') }}">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.2.0/socket.io.js" integrity="sha256-yr4fRk/GU1ehYJPAs8P4JlTgu0Hdsp4ZKrx8bDEDC3I=" crossorigin="anonymous"></script>
   {% block style %}{% endblock %}
 <section class="content">
   <section id="navigation" class="navigation">
@@ -21,4 +22,17 @@
       {% block content %}{% endblock %}
   </section>
 </section>
+<script type="text/javascript" charset="utf-8">
+    var socket = io();
+    socket.on('connect', function() {
+        socket.emit('my event', {data: 'I\'m connected!'});
+    });
+
+    socket.on('test', ()=>{
+            console.log("data");
+    });
+
+
+</script>
+
 </html>

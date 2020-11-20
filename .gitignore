@@ -12,3 +12,14 @@ AnotherModule/__pycache__/AnotherModule.cpython-38.pyc
 *.mp4
 .idea/Embedded-Smart-Vision.iml
 windowsenv/
+venv/
+
+Videos/
+videos/
+
+Webportal_Module/application/db.sqlite
+
+venv/
+
+.idea/encodings.xml
+.idea/encodings.xml

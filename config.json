@@ -1,1 +1,6 @@
-{"node_name": "This is a new name for the node", "remote_host_token": "NULL"}
+{
+  "node_name": "Dan-Node",
+  "remote_host_token": "NULL",
+  "central_server_IP": "192.168.1.11",
+  "central_server_port": "1234"
+}

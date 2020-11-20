@@ -1,47 +1,50 @@
-import tensorflow as tf
 import numpy as np
-import sklearn
 import pickle
-from keras_facenet import FaceNet
 import cv2 as cv
+import os
+import face_recognition
 
 
 class Classifier:
     def __init__(self):
-        self.embedding_model = FaceNet()
-        self.classifier_model = pickle.load(open('Classification_Module/face_classifier', 'rb'))
+        self.faces = dict()
+        face_directory = os.path.join('Classification_Module', 'Faces')
+        for image_name in os.listdir(face_directory):
+            path = os.path.join(face_directory, image_name)
+            image = face_recognition.load_image_file(path)
+            face = face_recognition.face_encodings(image)[0]
+            name = os.path.splitext(image_name)[0]
+            self.faces[name] = face
 
     def __del__(self):
         pass
 
-    def classify(self, face: np.ndarray):
-        #print('attempting to grab embedding')
-        detections = self.embedding_model.extract(face)
-        #print('attempting to classify')
-        if len(detections) > 0:
-            embedding = detections[0].get('embedding')
-            embedding = embedding.reshape(1, -1)
-            classification = self.classifier_model.predict(embedding)
-            proba = self.classifier_model.predict_proba(embedding)
-            prob = proba[0, classification[0]] * 100
-        else:
-            classification = ''
-            prob = 100.000
-        return classification, prob
-
-    def apply_tags(self, path):
-        video = cv.VideoCapture(path)
-        success, frame = video.read()
+    def classify(self, frame, face_locations):
         tags = set()
-        while success:
-            tag, prob = self.classify(frame)
-
-            if prob < 60.000:
-                tags.add('Unknown')
-            else:
-                if tag == 0:
-                    tags.add('Amanda')
-                elif tag == 1:
-                    tags.add('Jimmy')
-            success, frame = video.read()
+        faces = face_recognition.face_encodings(frame, known_face_locations=face_locations, num_jitters=1, model="small")
+        for face in faces:
+            #print("Found a face!")
+            for known_face in self.faces:
+                results = face_recognition.compare_faces([self.faces[known_face]], face)
+                if results[0]:
+                    tags.add(known_face)
         return tags
+
+    def apply_tags(self, faces: list):
+        tags = set()
+        for face in faces:
+            names = self.classify(face)
+            for name in names:
+                tags.add(name)
+        if len(tags) == 0:
+            tags.add('Unknown Person')
+        return tags
+
+
+"""
+if __name__ == '__main__':
+    classifier = Classifier()
+    test_image = face_recognition.load_image_file('test.jpg')
+    test_tag = classifier.classify(test_image)
+    print(test_tag)
+"""
