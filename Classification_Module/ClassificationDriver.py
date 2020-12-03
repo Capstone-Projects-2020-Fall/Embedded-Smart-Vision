@@ -18,6 +18,8 @@ _Minfo = {
 last_found = datetime.now()
 tags = set()
 face_detector = cv.CascadeClassifier('Camera_Module/face_data.xml')
+consec_faces_found = 0
+recording = False
 
 
 # Processes any messages left on the queue
@@ -41,31 +43,43 @@ def __proc_message__(conn):
                 desired_face_found = False
                 frame = m.message
                 face_locations = detect_faces(frame)
-                global last_found, tags
+                global last_found, tags, consec_faces_found, recording
                 if len(face_locations) > 0:
-                    names = classifier.classify(frame, face_locations)
-                    # Record when last face was found
-                    last_found = datetime.now()
-                    # Tell camera to start recording if it isn't already
-                    record_message = ModuleMessage("CM", "Start Recording", None)
-                    conn.send(record_message)
-                    # Add classified names to our list
-                    for name in names:
-                        tags.add(name)
-                        led_on_message = ModuleMessage("ACT", "Face Found", None)
-                        conn.send(led_on_message)
-                        #print(name)
-                        desired_face_found = True
+                    if not recording:
+                        # Increment consecutive number of faces found
+                        consec_faces_found = consec_faces_found + 1
+                    # Check if we've met threshold to start recording
+                    if consec_faces_found > 3: recording = True
+
+                    if recording:
+                        names = classifier.classify(frame, face_locations)
+                        # Record when last face was found
+                        last_found = datetime.now()
+                        # Tell camera to start recording if it isn't already
+                        record_message = ModuleMessage("CM", "Start Recording", None)
+                        conn.send(record_message)
+                        # Add classified names to our list
+                        for name in names:
+                            tags.add(name)
+                            led_on_message = ModuleMessage("ACT", "Face Found", None)
+                            conn.send(led_on_message)
+                            #print(name)
+                            desired_face_found = True
                 else:
-                    # No face found for too long, so stop recording if we are recording
-                    now = datetime.now()
-                    delta = now - last_found
-                    if delta.seconds > 2:
-                        if len(tags) == 0:
-                            tags.add('Unknown Person')
-                        stop_record_message = ModuleMessage("CM", "Stop Recording", tags)
-                        conn.send(stop_record_message)
-                        tags.clear()
+                    if recording:
+                        # No face found for too long, so stop recording if we are recording
+                        now = datetime.now()
+                        delta = now - last_found
+                        if delta.seconds > 2:
+                            if len(tags) == 0:
+                                tags.add('Unknown Person')
+                            stop_record_message = ModuleMessage("CM", "Stop Recording", tags)
+                            conn.send(stop_record_message)
+                            tags.clear()
+                            recording = False
+                            consec_faces_found = True
+                    else:
+                        consec_faces_found = 0
                 if desired_face_found is False:
                     led_off_message = ModuleMessage("ACT", "Face Not Found", None)
                     conn.send(led_off_message)

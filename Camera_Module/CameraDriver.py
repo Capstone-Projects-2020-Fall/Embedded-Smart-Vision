@@ -6,6 +6,7 @@ import numpy as np
 import os
 from _thread import start_new_thread
 from queue import Queue
+from datetime import datetime
 
 baseline_frame = np.zeros((0, 1))
 frames = list()
@@ -13,9 +14,12 @@ recording = False
 video_writers = Queue()
 current_video_writer: cv.VideoWriter = None
 video_directory = os.path.join(os.getcwd(), 'Videos')
+if not os.path.isdir(video_directory):
+    os.mkdir(video_directory)
 video_count = len(os.listdir(video_directory))
 path = os.path.join(video_directory, 'video%d.mp4' % video_count)
 messages = Queue(0)
+frame_last_sent = datetime.now()
 
 _Minfo = {
     "version": 1,
@@ -55,11 +59,11 @@ def start_recording():
     recording = True
     current_video_writer = cv.VideoWriter(path, cv.VideoWriter_fourcc('a', 'v', 'c', '1'), 10, (800, 550))
     video_writers.put(current_video_writer)
-    #print("Started Recording")
+    print("Started Recording")
 
 
 def stop_recording(tags: set):
-    #print("Stopping Recording")
+    print("Stopping Recording")
     global recording, path, video_count
     start_new_thread(upload_video, (tags, path, ))
     video_count = video_count + 1
@@ -100,14 +104,22 @@ def __operation__(cam: Camera.Camera, conn):
     threshold = cv.threshold(delta, 35, 255, cv.THRESH_BINARY)[1]
 
     (contours, _) = cv.findContours(threshold, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    global frame_last_sent
     if len(contours) > 0:
         # Motion detected, so send frames to be classified
         frame_message = ModuleMessage("IPM", "New Frame", frame)
         conn.send(frame_message)
+        frame_last_sent = datetime.now()
         baseline_frame = gray_frame
     else:
-        # No motion detected; do nothing
-        pass
+        # No motion detected; send message only if a second has passed and recording
+        if recording:
+            current_time = datetime.now()
+            delta = current_time - frame_last_sent
+            if delta.seconds > 1:
+                frame_message = ModuleMessage("IPM", "New Frame", frame)
+                conn.send(frame_message)
+                frame_last_sent = current_time
 
 
 # Runs the modules functionality
