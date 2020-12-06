@@ -25,6 +25,13 @@ If you run into any errors installing the dependencies (notably opencv), you may
 
 Again, if you are utilizing GPIO pins you will need to run with root permissions and must use the “sudo” keyword.
 
+### Changing Faces
+It is likely that you want to change which people the software tries to find in the frame of the camera. To do this, you will want to find the "Faces" directory in the classification module. In this directory, you will find multiple subdirectories, each of which correspond to one person, and a file named "embeddings". Delete any subdirectories of people you don't wish to attempt to classify anymore and add subdirectories for each person you wish to attempt to classify from now on. In the subdirectories, add as many pictures as you would like of the person. Then, from the Classification_Module directory, run the following command:
+    
+    python3 Create_embeddings.py
+    
+This will recreate the embeddings and store them in the "embeddings" file mentioned previously. If the software cannot locate the face in a provided picture, it will alert you and delete the picture. Once embeddings are created, run the software as before and your new embeddings will be used instead.
+
 ### Connecting to Central Server
 This software can run independently and gather data, but there is also the option to connect it (along with other raspberry pi’s) to a central server that gives access to the data from all raspberry pi’s in one location. See https://github.com/Capstone-Projects-2020-Fall/Embedded-Smart-Vision-Server for building the server. Once the server is built and running, you will need to alter the config.json file in the base directory for this application. In this file you must specify the IP address of the central server you wish to connect to. You may also change the node name in order to uniquely identify different nodes. The port should not be altered unless you changed the port in the source code of the Socket Server on the central server. Once the config.json file has been updated, simply running the module with the same command as before will connect it to the central server.
 
